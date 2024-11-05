@@ -114,7 +114,12 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	l.logger.Println("[debug][setddblock] aquire lock reqult", lockResult)
+	l.logger.Println("[debug][setddblock] aquire lock result", lockResult)
+	if lockResult == nil {
+		// Lock is considered expired due to TTL
+		l.logger.Println("[debug][setddblock] lock expired due to TTL")
+		return false, nil
+	}
 	if !lockResult.LockGranted && !l.delay {
 		return false, nil
 	}

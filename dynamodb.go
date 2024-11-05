@@ -291,6 +291,16 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 		return nil, errMaybeRaceDeleted
 	}
 
+	ttl, ok := readAttributeValueMemberN(output.Item, "ttl")
+	if !ok {
+		return nil, errMaybeRaceDeleted
+	}
+
+	// Check if the TTL has expired
+	if time.Now().Unix() > ttl {
+		return nil, nil // TTL expired, consider lock as not granted
+	}
+
 	return &lockOutput{
 		LockGranted:        false,
 		LeaseDuration:      leaseDuration,
