@@ -19,7 +19,7 @@ ENV CGO_ENABLED=0
 # Copy the source code into the container
 COPY . .
 
-RUN echo "Build date: $BUILD_DATE" && echo "Building for OS: $GOOS, ARCH: $GOARCH" && GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-s -w' -o /setddblock cmd/setddblock/main.go
+RUN echo "Build date: $BUILD_DATE" && echo "Building for OS: $GOOS, ARCH: $GOARCH" && uname -a && file /usr/local/go/bin/go && GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-s -w' -o /setddblock cmd/setddblock/main.go && file /setddblock
 
 # Start a new stage from scratch
 FROM alpine:latest
