@@ -12,8 +12,8 @@ set -e
 # Define the name of the Docker image
 IMAGE_NAME=setddblock-builder
 
-# Build the Docker image for macOS ARM64 with no cache
-docker build --no-cache --progress=plain --build-arg GOOS=darwin --build-arg GOARCH=arm64 --build-arg BUILD_DATE=$(date +%Y-%m-%dT%H:%M:%S) -t ${IMAGE_NAME}-macos-arm64 .
+# Build the Docker image for macOS ARM64 with no cache, specifying the Dockerfile explicitly
+docker build --no-cache --progress=plain --file Dockerfile --build-arg GOOS=darwin --build-arg GOARCH=arm64 --build-arg BUILD_DATE=$(date +%Y-%m-%dT%H:%M:%S) -t ${IMAGE_NAME}-macos-arm64 .
 
 # Create a container from the macOS ARM64 image
 CONTAINER_ID_MACOS_ARM64=$(docker create ${IMAGE_NAME}-macos-arm64)
