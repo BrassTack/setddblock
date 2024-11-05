@@ -22,7 +22,7 @@ echo "DynamoDB Local is ready."
 
 # Run tests
 echo "Running tests..."
-go test -race -timeout 30s ./...
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy go test -race -timeout 30s ./...
 
 # Stop DynamoDB Local
 echo "Stopping DynamoDB Local..."
