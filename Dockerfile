@@ -13,12 +13,13 @@ RUN go mod download
 # Build the Go app with specified OS and architecture
 ARG GOOS
 ARG GOARCH
+ARG BUILD_DATE
 ENV CGO_ENABLED=0
 
 # Copy the source code into the container
 COPY . .
 
-RUN GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-s -w' -o /setddblock cmd/setddblock/main.go
+RUN echo "Build date: $BUILD_DATE" && GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-s -w' -o /setddblock cmd/setddblock/main.go
 
 # Start a new stage from scratch
 FROM alpine:latest
