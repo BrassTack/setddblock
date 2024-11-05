@@ -1,6 +1,9 @@
 # Start with the official Golang image as the build environment
 FROM golang:1.21 AS builder
 
+# Install necessary packages
+RUN apt-get update && apt-get install -y file
+
 # Set the working directory inside the container
 WORKDIR /app
 
