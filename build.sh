@@ -5,8 +5,8 @@ set -e
 # Define the name of the Docker image
 IMAGE_NAME=setddblock-builder
 
-# Build the Docker image
-docker build -t $IMAGE_NAME .
+# Build the Docker image with environment variables for macOS
+docker build --build-arg GOOS=darwin --build-arg GOARCH=arm64 -t $IMAGE_NAME .
 
 # Create a container from the image
 CONTAINER_ID=$(docker create $IMAGE_NAME)

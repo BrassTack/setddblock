@@ -13,8 +13,10 @@ RUN go mod download
 # Copy the source code into the container
 COPY . .
 
-# Build the Go app
-RUN go build -o /setddblock cmd/setddblock/main.go
+# Build the Go app with specified OS and architecture
+ARG GOOS
+ARG GOARCH
+RUN GOOS=$GOOS GOARCH=$GOARCH go build -o /setddblock cmd/setddblock/main.go
 
 # Start a new stage from scratch
 FROM alpine:latest
