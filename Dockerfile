@@ -10,13 +10,14 @@ COPY go.mod go.sum ./
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
-# Copy the source code into the container
-COPY . .
-
 # Build the Go app with specified OS and architecture
 ARG GOOS
 ARG GOARCH
 ENV CGO_ENABLED=0
+
+# Copy the source code into the container
+COPY . .
+
 RUN GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-s -w' -o /setddblock cmd/setddblock/main.go
 
 # Start a new stage from scratch
