@@ -19,7 +19,19 @@ ENV CGO_ENABLED=0
 # Copy the source code into the container
 COPY . .
 
-RUN echo "Build date: $BUILD_DATE" && echo "Building for OS: $GOOS, ARCH: $GOARCH" && uname -a && file /usr/local/go/bin/go && echo "Go environment variables:" && go env && echo "Go version:" && go version && GOOS=$GOOS GOARCH=$GOARCH go build -v -o /setddblock cmd/setddblock/main.go && file /setddblock
+RUN echo "Starting build process..." && \
+    echo "Build date: $BUILD_DATE" && \
+    echo "Building for OS: $GOOS, ARCH: $GOARCH" && \
+    uname -a && \
+    file /usr/local/go/bin/go && \
+    echo "Go environment variables:" && \
+    go env && \
+    echo "Go version:" && \
+    go version && \
+    echo "Running go build..." && \
+    GOOS=$GOOS GOARCH=$GOARCH go build -v -o /setddblock cmd/setddblock/main.go && \
+    file /setddblock && \
+    echo "Build process completed."
 
 # Start a new stage from scratch
 FROM alpine:latest
