@@ -5,37 +5,31 @@ set -e
 # Define the name of the Docker image
 IMAGE_NAME=setddblock-builder
 
-# Build the Docker image for macOS
-docker build --build-arg GOOS=darwin --build-arg GOARCH=arm64 -t ${IMAGE_NAME}-macos .
+# Define the name of the Docker image
+IMAGE_NAME=setddblock-builder
 
-# Create a container from the macOS image
-CONTAINER_ID_MACOS=$(docker create ${IMAGE_NAME}-macos)
+# Build the Docker image for macOS ARM64
+docker build --build-arg GOOS=darwin --build-arg GOARCH=arm64 -t ${IMAGE_NAME}-macos-arm64 .
 
-# Copy the macOS binary from the container to the host
-docker cp $CONTAINER_ID_MACOS:/setddblock ./setddblock-macos
+# Create a container from the macOS ARM64 image
+CONTAINER_ID_MACOS_ARM64=$(docker create ${IMAGE_NAME}-macos-arm64)
 
-# Remove the macOS container
-docker rm $CONTAINER_ID_MACOS
+# Copy the macOS ARM64 binary from the container to the host
+docker cp $CONTAINER_ID_MACOS_ARM64:/setddblock ./setddblock-macos-arm64
 
-# Build the Docker image for Linux
-docker build --build-arg GOOS=linux --build-arg GOARCH=amd64 -t ${IMAGE_NAME}-linux .
+# Remove the macOS ARM64 container
+docker rm $CONTAINER_ID_MACOS_ARM64
 
-# Create a container from the Linux image
-CONTAINER_ID_LINUX=$(docker create ${IMAGE_NAME}-linux)
+# Build the Docker image for Linux AMD64
+docker build --build-arg GOOS=linux --build-arg GOARCH=amd64 -t ${IMAGE_NAME}-linux-amd64 .
 
-# Copy the Linux binary from the container to the host
-docker cp $CONTAINER_ID_LINUX:/setddblock ./setddblock-linux
+# Create a container from the Linux AMD64 image
+CONTAINER_ID_LINUX_AMD64=$(docker create ${IMAGE_NAME}-linux-amd64)
 
-# Remove the Linux container
-docker rm $CONTAINER_ID_LINUX
+# Copy the Linux AMD64 binary from the container to the host
+docker cp $CONTAINER_ID_LINUX_AMD64:/setddblock ./setddblock-linux-amd64
 
-# Create a container from the image
-CONTAINER_ID=$(docker create $IMAGE_NAME)
+# Remove the Linux AMD64 container
+docker rm $CONTAINER_ID_LINUX_AMD64
 
-# Copy the binary from the container to the host
-docker cp $CONTAINER_ID:/setddblock ./setddblock
-
-# Remove the container
-docker rm $CONTAINER_ID
-
-echo "Build complete. The binary is located at ./setddblock"
+echo "Build complete. The binaries are located at ./setddblock-macos-arm64 and ./setddblock-linux-amd64"
