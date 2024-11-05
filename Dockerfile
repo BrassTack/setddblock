@@ -16,6 +16,7 @@ COPY . .
 # Build the Go app with specified OS and architecture
 ARG GOOS
 ARG GOARCH
+ENV CGO_ENABLED=0
 RUN GOOS=$GOOS GOARCH=$GOARCH go build -o /setddblock cmd/setddblock/main.go
 
 # Start a new stage from scratch
