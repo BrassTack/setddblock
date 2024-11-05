@@ -14,6 +14,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Build the Go app with specified OS and architecture
+# Ensure the build supports both macOS and Linux
 ARG GOOS
 ARG GOARCH
 ARG BUILD_DATE
