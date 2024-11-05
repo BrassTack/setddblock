@@ -17,7 +17,7 @@ COPY . .
 ARG GOOS
 ARG GOARCH
 ENV CGO_ENABLED=0
-RUN GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o /setddblock cmd/setddblock/main.go
+RUN GOOS=$GOOS GOARCH=$GOARCH go build -a -installsuffix cgo -ldflags '-s -w' -o /setddblock cmd/setddblock/main.go
 
 # Start a new stage from scratch
 FROM alpine:latest

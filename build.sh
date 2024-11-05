@@ -5,6 +5,10 @@ set -e
 # Define the name of the Docker image
 IMAGE_NAME=setddblock-builder
 
+#!/usr/bin/env bash
+
+set -e
+
 # Define the name of the Docker image
 IMAGE_NAME=setddblock-builder
 
