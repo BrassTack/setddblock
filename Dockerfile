@@ -45,7 +45,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN go build -o /setddblock cmd/setddblock/main.go
+RUN go build -v -o /setddblock cmd/setddblock/main.go
 
 # Start a new stage from scratch
 FROM alpine:latest
