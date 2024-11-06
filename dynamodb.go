@@ -302,7 +302,7 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 	if err != nil {
 		return nil, err
 	}
-	svc.logger.Printf("[debug][setddblock] get item success for table_name=%s, item_id=%s, TTL: %d", parms.TableName, parms.ItemID, ttl)
+	svc.logger.Printf("[debug][setddblock] get item success for table_name=%s, item_id=%s, TTL: %d, current_time=%d", parms.TableName, parms.ItemID, ttl, time.Now().Unix())
 	n, ok := readAttributeValueMemberN(output.Item, "LeaseDuration")
 	if !ok {
 		return nil, errMaybeRaceDeleted
@@ -318,10 +318,10 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 		return nil, errMaybeRaceDeleted
 	}
 
-	// Check if the TTL has expired
+	svc.logger.Printf("[debug][setddblock] checking TTL for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttl)
 	if time.Now().Unix() > ttl {
-		svc.logger.Printf("[debug][setddblock] TTL has expired for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttl)
-		return nil, nil
+		svc.logger.Printf("[debug][setddblock] TTL has expired for item_id=%s, current time=%d, ttl=%d, table_name=%s", parms.ItemID, time.Now().Unix(), ttl, parms.TableName)
+		return nil, fmt.Errorf("TTL expired for item_id=%s, table_name=%s", parms.ItemID, parms.TableName)
 	}
 
 	return &lockOutput{
