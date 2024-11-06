@@ -170,4 +170,3 @@ func TestKillAndRetryLock(t *testing.T) {
 	locker.Unlock()
 	require.Error(t, locker.LastErr())
 }
-}
