@@ -209,7 +209,7 @@ func (l *DynamoDBLocker) Lock() {
 func (l *DynamoDBLocker) UnlockWithErr(ctx context.Context) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.logger.Println("[debug][setddblock] start UnlockWithErr")
+	l.logger.Printf("[debug][setddblock] start UnlockWithErr for item_id=%s, table_name=%s at %s", l.itemID, l.tableName, time.Now().Format(time.RFC3339))
 	if !l.locked {
 		return errors.New("not lock granted")
 	}
