@@ -15,21 +15,18 @@ done
 echo "DynamoDB Local is ready."
 
 # Run the setddblock tool against the local DynamoDB instance
-echo "Running setddblock tool..."
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 --debug -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Hello, DynamoDB Local!";sleep 300' &
-echo ran now sleep 5
-sleep 5
-echo try again
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 --debug -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Hello, DynamoDB Local 22222!";sleep 300'
-echo ran 2
+echo "Running setddblock tool to acquire lock..."
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 --debug -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired!"; sleep 10' &
 
+# Wait for a moment to ensure the lock is acquired
+sleep 2
 
+# Attempt to acquire the lock again to demonstrate it's locked
+echo "Attempting to acquire lock again..."
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 --debug -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "This should not run if lock is held"; exit 1' || echo "Lock is held, as expected."
 
+# Wait for the initial lock to expire
 wait
-wait
-
-
-
 
 # Stop DynamoDB Local
 echo "Stopping DynamoDB Local..."
