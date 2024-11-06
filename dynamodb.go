@@ -280,7 +280,7 @@ func (svc *dynamoDBService) putItemForLock(ctx context.Context, parms *lockInput
 }
 
 func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput) (*lockOutput, error) {
-	svc.logger.Printf("[debug][setddblock] Attempting to get item from table_name=%s, item_id=%s", parms.TableName, parms.ItemID)
+	svc.logger.Printf("[debug][setddblock] try get item table_name=%s, item_id=%s", parms.TableName, parms.ItemID)
 	output, err := svc.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &parms.TableName,
 		Key: map[string]types.AttributeValue{
