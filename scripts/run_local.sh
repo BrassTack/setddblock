@@ -43,14 +43,13 @@ sleep 2
 get_item_details() {
   item_details=$(AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text)
   if [ -z "$item_details" ]; then
-    echo "No item found in DynamoDB for lock_item_id"
+    echo "[$(date +%Y-%m-%dT%H:%M:%S)] No item found in DynamoDB for lock_item_id"
     return 1
   fi
   revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
   ttl=$(echo "$item_details" | grep "TTL" | awk '{print $2}')
-  echo "REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
+  echo "[$(date +%Y-%m-%dT%H:%M:%S)] REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
 }
-echo "Checking DynamoDB item details before retrying to acquire the lock..."
 echo "Checking DynamoDB item details before retrying to acquire the lock..."
 get_item_details || echo "Skipping item details check due to missing record."
 
