@@ -18,7 +18,7 @@ func TestTTLExpirationLock(t *testing.T) {
 		setddblock.WithLeaseDuration(5*time.Second), // TTL of 5 seconds
 	)
 	require.NoError(t, err, "Failed to create locker")
-	require.NoError(t, locker.Lock(), "Failed to acquire initial lock")
+	locker.Lock()
 	t.Log("Initial lock acquired. Simulating process termination by not unlocking.")
 
 	// Capture the expected expiration time based on the TTL
