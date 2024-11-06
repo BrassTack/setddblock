@@ -165,7 +165,7 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 		nextHeartbeatTime := lockResult.NextHeartbeatLimit.Add(-time.Duration(float64(lockResult.LeaseDuration) * 0.2))
 		for {
 			sleepTime := time.Until(nextHeartbeatTime)
-			l.logger.Printf("[debug][setddblock] wait for next heartbeet time until %s (%s)", nextHeartbeatTime, sleepTime)
+			l.logger.Printf("[debug][setddblock] wait for next heartbeet time for item_id=%s, table_name=%s until %s (%s) at %s", l.itemID, l.tableName, nextHeartbeatTime, sleepTime, time.Now().Format(time.RFC3339))
 			select {
 			case <-ctx.Done():
 				return
