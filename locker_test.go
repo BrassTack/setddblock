@@ -236,6 +236,7 @@ func TestRunLocalScript(t *testing.T) {
 	err = cmd.Run()
 	require.NoError(t, err)
 }
+func TestInvalidEndpoint(t *testing.T) {
 	defer func() {
 		err := setddblock.Recover(recover())
 		require.NoError(t, err, "check no panic")
@@ -251,4 +252,5 @@ func TestRunLocalScript(t *testing.T) {
 	locker.ClearLastErr()
 	locker.Unlock()
 	require.Error(t, locker.LastErr())
+}
 }
