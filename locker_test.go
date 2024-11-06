@@ -3,6 +3,8 @@ package setddblock_test
 import (
 	"bytes"
 	"log"
+	"net/http"
+	"os/exec"
 	"os"
 	"strings"
 	"sync"
