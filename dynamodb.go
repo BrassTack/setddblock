@@ -302,7 +302,7 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 	if err != nil {
 		return nil, err
 	}
-	svc.logger.Printf("[debug][setddblock] Successfully retrieved item with TTL: %d", ttl)
+	svc.logger.Printf("[debug][setddblock] get item success for table_name=%s, item_id=%s, TTL: %d", parms.TableName, parms.ItemID, ttl)
 	n, ok := readAttributeValueMemberN(output.Item, "LeaseDuration")
 	if !ok {
 		return nil, errMaybeRaceDeleted
