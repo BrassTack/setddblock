@@ -41,7 +41,7 @@ sleep 2
 
 # Retry acquiring the lock until successful
 echo "Retrying to acquire lock..."
-while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
+while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --debug --timeout "100s" --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
   echo "Lock not acquired, retrying..."
   sleep 1
 done
