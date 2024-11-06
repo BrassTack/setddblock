@@ -315,14 +315,14 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 		return nil, errMaybeRaceDeleted
 	}
 
-	ttl, ok := readAttributeValueMemberN(output.Item, "ttl")
+	ttlValue, ok := readAttributeValueMemberN(output.Item, "ttl")
 	if !ok {
 		return nil, errMaybeRaceDeleted
 	}
 
-	svc.logger.Printf("[debug][setddblock] checking TTL for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttl)
-	if time.Now().Unix() > ttl {
-		svc.logger.Printf("[debug][setddblock] TTL has expired for item_id=%s, current time=%d, ttl=%d, table_name=%s", parms.ItemID, time.Now().Unix(), ttl, parms.TableName)
+	svc.logger.Printf("[debug][setddblock] checking TTL for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttlValue)
+	if time.Now().Unix() > ttlValue {
+		svc.logger.Printf("[debug][setddblock] TTL has expired for item_id=%s, current time=%d, ttl=%d, table_name=%s", parms.ItemID, time.Now().Unix(), ttlValue, parms.TableName)
 		return nil, fmt.Errorf("TTL expired for item_id=%s, table_name=%s", parms.ItemID, parms.TableName)
 	}
 
