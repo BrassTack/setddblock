@@ -42,7 +42,8 @@ func _main() int {
 	flag.BoolVar(&versionFlag, "version", false, "show version")
 	flag.StringVar(&endpoint, "endpoint", "", "If you switch remote, set AWS DynamoDB endpoint url.")
 	flag.StringVar(&region, "region", "", "aws region")
-	flag.StringVar(&timeout, "timeout", "", "set command timeout")
+	flag.StringVar(&timeout, "timeout", "", "set command timeout (e.g., 30s, 1m, 2h)
+")
 
 	args := make([]string, 1, len(os.Args))
 	args[0] = os.Args[0]

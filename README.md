@@ -32,7 +32,7 @@ Flags:
   --region string
         aws region
   --timeout string
-        set command timeout
+        set command timeout (e.g., 30s, 1m, 2h)
   --version
         show version
 ```
