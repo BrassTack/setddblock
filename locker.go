@@ -216,7 +216,7 @@ func (l *DynamoDBLocker) UnlockWithErr(ctx context.Context) error {
 	close(l.unlockSignal)
 	l.locked = false
 	l.wg.Wait()
-	l.logger.Println("[debug][setddblock] end UnlockWithErr")
+	l.logger.Printf("[debug][setddblock] end UnlockWithErr for item_id=%s, table_name=%s at %s", l.itemID, l.tableName, time.Now().Format(time.RFC3339))
 	return nil
 }
 
