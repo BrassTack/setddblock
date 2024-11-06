@@ -198,7 +198,7 @@ func (parms *lockInput) Item() (map[string]types.AttributeValue, time.Time) {
 		"Revision": &types.AttributeValueMemberS{
 			Value: parms.Revision,
 		},
-		"ttl": &types.AttributeValueMemberN{
+		"ttl": &types.AttributeValueMemberN{ // Log the TTL value
 			Value: strconv.FormatInt(ttl.Unix(), 10),
 		},
 	}, nextHeartbeatLimit
@@ -260,7 +260,7 @@ func (svc *dynamoDBService) putItemForLock(ctx context.Context, parms *lockInput
 		ConditionExpression: aws.String("attribute_not_exists(ID)"),
 	})
 	if err == nil {
-		svc.logger.Printf("[debug][setddblock] lock granted")
+		svc.logger.Printf("[debug][setddblock] lock granted with TTL: %d", ttl.Unix())
 		return &lockOutput{
 			LockGranted:        true,
 			LeaseDuration:      parms.LeaseDuration,
@@ -290,7 +290,7 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 	if err != nil {
 		return nil, err
 	}
-	svc.logger.Println("[debug][setddblock] get item success")
+	svc.logger.Printf("[debug][setddblock] get item success with TTL: %d", ttl)
 	n, ok := readAttributeValueMemberN(output.Item, "LeaseDuration")
 	if !ok {
 		return nil, errMaybeRaceDeleted
