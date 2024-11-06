@@ -84,6 +84,7 @@ func (l *DynamoDBLocker) generateRevision() (string, error) {
 func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	l.logger.Println("[debug][setddblock] start LockWithErr")
 	if l.locked {
 		return true, errors.New("aleady lock granted")
 	}
@@ -107,6 +108,7 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 		LeaseDuration: l.leaseDuration,
 		Revision:      rev,
 	}
+	l.logger.Printf("[debug][setddblock] LockWithErr input: %s", input)
 	lockResult, err := l.svc.AquireLock(ctx, input)
 	if err != nil {
 		return false, err
@@ -116,6 +118,7 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 		l.logger.Println("[debug][setddblock] lock expired due to TTL")
 		return false, nil
 	}
+	l.logger.Printf("[debug][setddblock] LockWithErr lockResult: %s", lockResult)
 	if !lockResult.LockGranted && !l.delay {
 		return false, nil
 	}
