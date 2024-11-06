@@ -51,7 +51,7 @@ get_item_details() {
   fi
   revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
   ttl=$(echo "$item_details" | grep "TTL" | awk '{print $2}')
-  log_with_date "REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
+  log_with_date "[${SECONDS}s] REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
 }
 log_with_date "Checking DynamoDB item details before retrying to acquire the lock..."
 get_item_details || log_with_date "Skipping item details check due to missing record."
