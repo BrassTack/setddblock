@@ -25,11 +25,19 @@ sleep 2
 
 # Attempt to acquire the lock again to demonstrate it's locked
 echo "Attempting to acquire lock again to demonstrate it's locked..."
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "This should not run if lock is held"; exit 1' || echo "Lock is held, as expected."
+if ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "This should not run if lock is held"; exit 1'; then
+  echo "Lock is held, as expected."
+else
+  echo "Error: Lock was acquired unexpectedly."
+  exit 1
+fi
 
 # Simulate killing the process holding the lock
 echo "Simulating process kill..."
 pkill -f "setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id"
+
+# Wait for a moment to ensure the lock is released
+sleep 2
 
 # Retry acquiring the lock until successful
 echo "Retrying to acquire lock..."
