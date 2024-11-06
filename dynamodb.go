@@ -468,7 +468,7 @@ func (svc *dynamoDBService) deleteItemForUnlock(ctx context.Context, parms *lock
 		},
 	})
 	if err == nil {
-		svc.logger.Printf("[debug][setddblock] success delete item to ddb")
+		svc.logger.Printf("[debug][setddblock] success delete item to ddb for table_name=%s, item_id=%s at %s", parms.TableName, parms.ItemID, time.Now().Format(time.RFC3339))
 		return nil
 	}
 	if strings.Contains(err.Error(), "ConditionalCheckFailedException") {
