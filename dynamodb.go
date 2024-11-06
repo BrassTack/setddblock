@@ -108,7 +108,7 @@ func (svc *dynamoDBService) LockTableExists(ctx context.Context, tableName strin
 	}
 	svc.logger.Printf("[debug][setddblock] table %s status is %s at %s", tableName, table.Table.TableStatus, time.Now().Format(time.RFC3339))
 	exists := table.Table.TableStatus == types.TableStatusActive || table.Table.TableStatus == types.TableStatusUpdating
-	svc.logger.Printf("[debug][setddblock] lock table %s exists = %v", tableName, exists)
+	svc.logger.Printf("[debug][setddblock] lock table %s exists = %v at %s", tableName, exists, time.Now().Format(time.RFC3339))
 	if exists {
 		return true, nil
 	}
