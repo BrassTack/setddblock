@@ -265,7 +265,7 @@ func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*
 
 func (svc *dynamoDBService) putItemForLock(ctx context.Context, parms *lockInput) (*lockOutput, error) {
 	item, nextHeartbeatLimit := parms.Item()
-	svc.logger.Printf("[debug][setddblock] Attempting to put item in DynamoDB for table_name=%s, item_id=%s", parms.TableName, parms.ItemID)
+	svc.logger.Printf("[debug][setddblock] try put item to ddb for table_name=%s, item_id=%s", parms.TableName, parms.ItemID)
 	_, err := svc.client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           &parms.TableName,
 		Item:                item,
