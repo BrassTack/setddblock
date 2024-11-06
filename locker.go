@@ -28,6 +28,16 @@ type DynamoDBLocker struct {
 	defaultCtx    context.Context
 }
 
+// ItemID returns the item ID of the lock.
+func (l *DynamoDBLocker) ItemID() string {
+	return l.itemID
+}
+
+// TableName returns the table name of the lock.
+func (l *DynamoDBLocker) TableName() string {
+	return l.tableName
+}
+
 //New returns *DynamoDBLocker
 func New(urlStr string, optFns ...func(*Options)) (*DynamoDBLocker, error) {
 	u, err := url.Parse(urlStr)
