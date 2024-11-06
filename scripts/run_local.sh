@@ -16,7 +16,20 @@ echo "DynamoDB Local is ready."
 
 # Run the setddblock tool against the local DynamoDB instance
 echo "Running setddblock tool..."
-AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -N --endpoint http://localhost:8000 ddb://test/lock_item_id echo "Hello, DynamoDB Local!"
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 --debug -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Hello, DynamoDB Local!";sleep 300' &
+echo ran now sleep 5
+sleep 5
+echo try again
+AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 --debug -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Hello, DynamoDB Local 22222!";sleep 300'
+echo ran 2
+
+
+
+wait
+wait
+
+
+
 
 # Stop DynamoDB Local
 echo "Stopping DynamoDB Local..."
