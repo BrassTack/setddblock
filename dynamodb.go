@@ -452,7 +452,7 @@ func (svc *dynamoDBService) ReleaseLock(ctx context.Context, parms *lockInput) e
 }
 
 func (svc *dynamoDBService) deleteItemForUnlock(ctx context.Context, parms *lockInput) error {
-	svc.logger.Printf("[debug][setddblock] try delete item to ddb")
+	svc.logger.Printf("[debug][setddblock] try delete item to ddb for table_name=%s, item_id=%s at %s", parms.TableName, parms.ItemID, time.Now().Format(time.RFC3339))
 	_, err := svc.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		TableName: &parms.TableName,
 		Key: map[string]types.AttributeValue{
