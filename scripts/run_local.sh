@@ -2,7 +2,6 @@
 
 set -e
 
-start_time=$SECONDS
 echo "Starting DynamoDB Local..."
 docker-compose up -d ddb-local
 
@@ -56,7 +55,7 @@ get_item_details || echo "Skipping item details check due to missing record."
 # Retry acquiring the lock until successful
 echo "Retrying to acquire lock..."
 retry_count=0
-start_time=$(date +%s)
+SECONDS=0
 while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --debug --timeout "100s" --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
   retry_count=$((retry_count + 1))
   elapsed_time=$SECONDS
