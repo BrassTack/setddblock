@@ -365,7 +365,7 @@ func (svc *dynamoDBService) updateItemForLock(ctx context.Context, parms *lockIn
 	ret, err := svc.updateItem(ctx, parms)
 	if err == nil {
 		svc.logger.Printf("[debug][setddblock] success update item to ddb")
-		svc.logger.Printf("[debug][setddblock] lock granted")
+		svc.logger.Printf("[debug][setddblock] lock granted for table_name=%s, item_id=%s at %s", parms.TableName, parms.ItemID, time.Now().Format(time.RFC3339))
 		return ret, nil
 	}
 	if strings.Contains(err.Error(), "ConditionalCheckFailedException") {
