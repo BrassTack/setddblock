@@ -84,7 +84,6 @@ func (l *DynamoDBLocker) generateRevision() (string, error) {
 func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.logger.Println("[debug][setddblock] start LockWithErr")
 	if l.locked {
 		return true, errors.New("aleady lock granted")
 	}
@@ -92,7 +91,6 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	l.logger.Printf("[debug][setddblock] lock table exists = %v", exists)
 	if !exists {
 		if err := l.svc.CreateLockTable(ctx, l.tableName); err != nil {
 			return false, err
@@ -103,7 +101,6 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	l.logger.Println("[debug][setddblock] try aquire lock")
 	input := &lockInput{
 		TableName:     l.tableName,
 		ItemID:        l.itemID,
@@ -114,7 +111,6 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	l.logger.Println("[debug][setddblock] aquire lock result", lockResult)
 	if lockResult == nil {
 		// Lock is considered expired due to TTL
 		l.logger.Println("[debug][setddblock] lock expired due to TTL")
@@ -125,7 +121,6 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	}
 	for !lockResult.LockGranted {
 		sleepTime := time.Until(lockResult.NextHeartbeatLimit)
-		l.logger.Printf("[debug][setddblock] wait for next aquire lock until %s (%s)", lockResult.NextHeartbeatLimit, sleepTime)
 		select {
 		case <-ctx.Done():
 			return false, ctx.Err()
@@ -136,14 +131,11 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		l.logger.Printf("[debug][setddblock] retry aquire lock until %s", input)
 		lockResult, err = l.svc.AquireLock(ctx, input)
 		if err != nil {
 			return false, err
 		}
-		l.logger.Printf("[debug][setddblock] now revision %s", lockResult.Revision)
 	}
-	l.logger.Println("[debug][setddblock] success lock granted")
 	l.locked = true
 	l.unlockSignal = make(chan struct{})
 	l.wg = sync.WaitGroup{}
@@ -190,7 +182,6 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 			nextHeartbeatTime = lockResult.NextHeartbeatLimit.Add(-time.Duration(float64(lockResult.LeaseDuration) * 0.2))
 		}
 	}()
-	l.logger.Println("[debug][setddblock] end LockWithErr")
 	return true, nil
 }
 

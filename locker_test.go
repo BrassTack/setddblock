@@ -121,7 +121,37 @@ func checkDDBLocalEndpoint(t *testing.T) string {
 	return ""
 }
 
-func TestNoPanic(t *testing.T) {
+func TestKillAndRetryLock(t *testing.T) {
+	endpoint := checkDDBLocalEndpoint(t)
+	locker, err := setddblock.New(
+		"ddb://test/item4",
+		setddblock.WithEndpoint(endpoint),
+		setddblock.WithLeaseDuration(500*time.Millisecond),
+	)
+	require.NoError(t, err)
+
+	// Acquire lock
+	lockGranted, err := locker.LockWithErr(context.Background())
+	require.NoError(t, err)
+	require.True(t, lockGranted)
+
+	// Simulate killing the process holding the lock
+	t.Log("Simulating process kill...")
+	locker.UnlockWithErr(context.Background()) // Simulate abrupt termination without proper unlock
+
+	// Retry acquiring the lock until successful
+	t.Log("Retrying to acquire lock...")
+	for {
+		lockGranted, err = locker.LockWithErr(context.Background())
+		if err == nil && lockGranted {
+			break
+		}
+		t.Log("Lock not acquired, retrying...")
+		time.Sleep(100 * time.Millisecond)
+	}
+	t.Log("Lock successfully acquired after retry.")
+	locker.UnlockWithErr(context.Background())
+}
 	defer func() {
 		err := setddblock.Recover(recover())
 		require.NoError(t, err, "check no panic")
