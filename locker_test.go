@@ -153,7 +153,6 @@ func TestKillAndRetryLock(t *testing.T) {
 	t.Log("Lock successfully acquired after retry.")
 	locker.UnlockWithErr(context.Background())
 	t.Log("TestKillAndRetryLock completed.")
-}
 	defer func() {
 		err := setddblock.Recover(recover())
 		require.NoError(t, err, "check no panic")
@@ -166,9 +165,9 @@ func TestKillAndRetryLock(t *testing.T) {
 	require.NoError(t, err)
 	locker.Lock()
 	require.Error(t, locker.LastErr())
+
+	locker.ClearLastErr()
+	locker.Unlock()
+	require.Error(t, locker.LastErr())
 }
-		locker.ClearLastErr()
-		locker.Unlock()
-		require.Error(t, locker.LastErr())
-	}
 }
