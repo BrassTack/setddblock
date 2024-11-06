@@ -230,7 +230,7 @@ func (output *lockOutput) String() string {
 
 func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*lockOutput, error) {
 	svc.logger.Printf("[debug][setddblock] AquireLock item_id=%s, lease_duration=%s, revision=%s, prev_revision=%v", parms.ItemID, parms.LeaseDuration, parms.Revision, parms.PrevRevision)
-	svc.logger.Println("[debug][setddblock] try aquire lock")
+	svc.logger.Println("[debug][setddblock] attempting to acquire lock")
 	var ret *lockOutput
 	var err error
 	if parms.PrevRevision == nil {
@@ -239,9 +239,11 @@ func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*
 		ret, err = svc.updateItemForLock(ctx, parms)
 	}
 	if err == nil {
+		svc.logger.Printf("[debug][setddblock] lock acquired successfully: %s", ret)
 		return ret, nil
 	}
 	if err != errMaybeRaceDeleted {
+		svc.logger.Printf("[error][setddblock] failed to acquire lock: %s", err)
 		return nil, err
 	}
 	retrier := retryPolicy.Start(ctx)
@@ -249,9 +251,15 @@ func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*
 		svc.logger.Printf("[debug][setddblock] race condition detected, retrying put item or get item")
 		ret, err = svc.putItemForLock(ctx, parms)
 		if err != errMaybeRaceDeleted {
+			if err == nil {
+				svc.logger.Printf("[debug][setddblock] lock acquired successfully after retry: %s", ret)
+			} else {
+				svc.logger.Printf("[error][setddblock] failed to acquire lock after retry: %s", err)
+			}
 			return ret, err
 		}
 	}
+	svc.logger.Printf("[error][setddblock] failed to acquire lock after all retries: %s", err)
 	return nil, err
 }
 
