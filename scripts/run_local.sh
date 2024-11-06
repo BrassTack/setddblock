@@ -44,7 +44,7 @@ echo "Checking DynamoDB item details before retrying to acquire the lock..."
 item_details=$(AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text)
 revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
 ttl=$(echo "$item_details" | grep "TTL" | awk '{print $2}')
-echo "Item details before retry: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
+echo "$(date +%Y-%m-%dT%H:%M:%S)] Item details before retry: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
 
 # Retry acquiring the lock until successful
 echo "Retrying to acquire lock..."
@@ -69,7 +69,7 @@ echo "Checking DynamoDB item details after retrying to acquire the lock..."
 item_details=$(AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text)
 revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
 ttl=$(echo "$item_details" | grep "TTL" | awk '{print $2}')
-echo "Item details after retry: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
+echo "$(date +%Y-%m-%dT%H:%M:%S)] Item details after retry: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
 
 # Stop DynamoDB Local
 stop_time=$(date +%s)
