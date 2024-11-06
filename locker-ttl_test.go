@@ -37,15 +37,12 @@ func TestTTLExpirationLock(t *testing.T) {
 		require.NoError(t, err, "Failed to create locker for retry")
 
 		// Try to lock again
-		if err := lockAttempt.Lock(); err == nil {
-			// Successfully acquired lock, indicating TTL expiration
-			t.Logf("Lock successfully acquired after TTL expired at %v", time.Now())
-			lockAttempt.Unlock() // Clean up
-			lockAcquired = true
-			break
-		} else {
-			t.Logf("Lock still held at %v; retrying...", time.Now())
-		}
+		lockAttempt.Lock()
+		defer lockAttempt.Unlock()
+		// Successfully acquired lock, indicating TTL expiration
+		t.Logf("Lock successfully acquired after TTL expired at %v", time.Now())
+		lockAcquired = true
+		break
 		time.Sleep(200 * time.Millisecond) // Short wait before retrying
 	}
 
