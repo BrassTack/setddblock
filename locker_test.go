@@ -113,6 +113,49 @@ func TestDDBLock(t *testing.T) {
 	require.True(t, lastTime1.After(lastTime2))
 	require.False(t, strings.Contains(buf.String(), "[error]"))
 }
+
+func TestUnlockStaleLockBasedOnTTL(t *testing.T) {
+	endpoint := checkDDBLocalEndpoint(t)
+	defer func() {
+		err := setddblock.Recover(recover())
+		require.NoError(t, err)
+	}()
+	var buf bytes.Buffer
+	filter := &logutils.LevelFilter{
+		Levels:   []logutils.LogLevel{"debug", "warn", "error"},
+		MinLevel: "warn",
+		ModifierFuncs: []logutils.ModifierFunc{
+			logutils.Color(color.FgHiBlack),
+			logutils.Color(color.FgYellow),
+			logutils.Color(color.FgRed, color.Bold),
+		},
+		Writer: &buf,
+	}
+	logger := log.New(filter, "", log.LstdFlags|log.Lmsgprefix)
+
+	locker, err := setddblock.New(
+		"ddb://test/stale_lock_item",
+		setddblock.WithEndpoint(endpoint),
+		setddblock.WithLeaseDuration(500*time.Millisecond),
+		setddblock.WithLogger(logger),
+	)
+	require.NoError(t, err)
+
+	// Acquire the lock
+	lockGranted, err := locker.LockWithErr(context.Background())
+	require.NoError(t, err)
+	require.True(t, lockGranted)
+
+	// Wait for the TTL to expire
+	time.Sleep(1 * time.Second)
+
+	// Attempt to unlock the stale lock
+	err = locker.UnlockWithErr(context.Background())
+	require.NoError(t, err)
+
+	t.Log(buf.String())
+	require.False(t, strings.Contains(buf.String(), "[error]"))
+}
 func checkDDBLocalEndpoint(t *testing.T) string {
 	t.Helper()
 	if endpoint := os.Getenv("DYNAMODB_LOCAL_ENDPOINT"); endpoint != "" {
