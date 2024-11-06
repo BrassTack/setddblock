@@ -281,7 +281,7 @@ func (svc *dynamoDBService) putItemForLock(ctx context.Context, parms *lockInput
 		}, nil
 	}
 	if strings.Contains(err.Error(), "ConditionalCheckFailedException") {
-		svc.logger.Printf("[debug][setddblock] not lock granted for item_id=%s, revision=%s", parms.ItemID, parms.Revision)
+		svc.logger.Printf("[debug][setddblock] not lock granted for table_name=%s, item_id=%s, revision=%s", parms.TableName, parms.ItemID, parms.Revision)
 		return svc.getItemForLock(ctx, parms)
 	}
 	return nil, err
