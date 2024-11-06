@@ -16,7 +16,9 @@ echo "DynamoDB Local is ready."
 
 # Run the setddblock tool against the local DynamoDB instance
 echo "Running setddblock tool to acquire lock..."
+echo "Acquiring initial lock..."
 AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired!"; sleep 30' &
+echo "Initial lock acquired, sleeping for 30 seconds."
 
 # Wait for a moment to ensure the lock is acquired
 sleep 2
