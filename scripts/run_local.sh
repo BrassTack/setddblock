@@ -27,8 +27,16 @@ sleep 2
 echo "Attempting to acquire lock again to demonstrate it's locked..."
 AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "This should not run if lock is held"; exit 1' || echo "Lock is held, as expected."
 
-# Wait for the initial lock to expire
-wait
+# Simulate killing the process holding the lock
+echo "Simulating process kill..."
+pkill -f "setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id"
+
+# Retry acquiring the lock until successful
+echo "Retrying to acquire lock..."
+while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -xN --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
+  echo "Lock not acquired, retrying..."
+  sleep 1
+done
 
 # Stop DynamoDB Local
 echo "Stopping DynamoDB Local..."
