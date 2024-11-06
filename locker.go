@@ -190,6 +190,7 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 			nextHeartbeatTime = lockResult.NextHeartbeatLimit.Add(-time.Duration(float64(lockResult.LeaseDuration) * 0.2))
 		}
 	}()
+	l.logger.Printf("[debug][setddblock] end LockWithErr for item_id=%s, table_name=%s at %s", l.itemID, l.tableName, time.Now().Format(time.RFC3339))
 	return true, nil
 }
 
