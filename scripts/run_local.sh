@@ -54,7 +54,7 @@ while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-a
   lease_duration=$(echo "$item_details" | grep "LEASEDURATION" | awk '{print $2}')
   revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
   ttl=$(echo "$item_details" | grep "ttl" | awk '{print $2}')
-  echo "[retry $retry_count][${elapsed_time}s] Item details: $item_details, LEASEDURATION: $lease_duration, REVISION: $revision, TTL: $ttl"
+  echo "[retry $retry_count][${elapsed_time}s] Item details: ID: $item_id, Table: test, LEASEDURATION: $lease_duration, REVISION: $revision, TTL: $ttl at $(date +%Y-%m-%dT%H:%M:%S)"
   sleep 1
 done
 
