@@ -60,7 +60,7 @@ get_item_details || log_with_date "Skipping item details check due to missing re
 log_with_date "Retrying to acquire lock..."
 retry_count=0
 SECONDS=0
-while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --debug --timeout "100s" --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
+while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --debug --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
   retry_count=$((retry_count + 1))
   log_with_date "[retry $retry_count][${SECONDS}s] Lock not acquired, retrying..."
   log_with_date "[retry $retry_count][${SECONDS}s] Querying DynamoDB for lock item details (table: test, item ID: lock_item_id)..."
