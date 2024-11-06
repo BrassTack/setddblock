@@ -101,6 +101,7 @@ func (svc *dynamoDBService) LockTableExists(ctx context.Context, tableName strin
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "ResourceNotFoundException") {
+			svc.logger.Printf("[debug][setddblock] lock not granted for item_id=%s, revision=%s", parms.ItemID, lockResult.Revision)
 			return false, nil
 		}
 		return false, err
@@ -308,7 +309,8 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 
 	// Check if the TTL has expired
 	if time.Now().Unix() > ttl {
-		return nil, nil // TTL expired, consider lock as not granted
+		svc.logger.Printf("[debug][setddblock] TTL expired for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttl)
+		return nil, nil
 	}
 
 	return &lockOutput{
