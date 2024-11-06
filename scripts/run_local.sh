@@ -59,5 +59,7 @@ while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-a
 done
 
 # Stop DynamoDB Local
-echo "Stopping DynamoDB Local..."
+stop_time=$(date +%s)
+elapsed_time=$((stop_time - start_time))
+echo "[$(date +%Y-%m-%dT%H:%M:%S) [${elapsed_time}s]] Stopping DynamoDB Local..."
 docker-compose down
