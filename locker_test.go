@@ -166,6 +166,7 @@ func TestKillAndRetryLock(t *testing.T) {
 	require.NoError(t, err)
 	locker.Lock()
 	require.Error(t, locker.LastErr())
+}
 	locker.ClearLastErr()
 	locker.Unlock()
 	require.Error(t, locker.LastErr())
