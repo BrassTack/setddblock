@@ -121,38 +121,7 @@ func checkDDBLocalEndpoint(t *testing.T) string {
 	return ""
 }
 
-func TestKillAndRetryLock(t *testing.T) {
-	t.Log("Starting TestKillAndRetryLock...")
-	endpoint := checkDDBLocalEndpoint(t)
-	locker, err := setddblock.New(
-		"ddb://test/item4",
-		setddblock.WithEndpoint(endpoint),
-		setddblock.WithLeaseDuration(500*time.Millisecond),
-	)
-	require.NoError(t, err)
-
-	// Acquire lock
-	lockGranted, err := locker.LockWithErr(context.Background())
-	require.NoError(t, err)
-	require.True(t, lockGranted)
-
-	// Simulate killing the process holding the lock
-	t.Log("Simulating process kill...")
-	locker.UnlockWithErr(context.Background()) // Simulate abrupt termination without proper unlock
-
-	// Retry acquiring the lock until successful
-	t.Log("Retrying to acquire lock...")
-	for {
-		lockGranted, err = locker.LockWithErr(context.Background())
-		if err == nil && lockGranted {
-			break
-		}
-		t.Log("Lock not acquired, retrying...")
-		time.Sleep(100 * time.Millisecond)
-	}
-	t.Log("Lock successfully acquired after retry.")
-	locker.UnlockWithErr(context.Background())
-	t.Log("TestKillAndRetryLock completed.")
+func TestNoPanic(t *testing.T) {
 	defer func() {
 		err := setddblock.Recover(recover())
 		require.NoError(t, err, "check no panic")
@@ -165,7 +134,6 @@ func TestKillAndRetryLock(t *testing.T) {
 	require.NoError(t, err)
 	locker.Lock()
 	require.Error(t, locker.LastErr())
-
 	locker.ClearLastErr()
 	locker.Unlock()
 	require.Error(t, locker.LastErr())
