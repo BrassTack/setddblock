@@ -239,7 +239,7 @@ func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*
 		ret, err = svc.updateItemForLock(ctx, parms)
 	}
 	if err == nil {
-		svc.logger.Printf("[debug][setddblock] lock acquired successfully: %s", ret)
+		svc.logger.Printf("[debug][setddblock] lock acquired successfully for table_name=%s, item_id=%s: %s at %s", parms.TableName, parms.ItemID, ret, time.Now().Format(time.RFC3339))
 		return ret, nil
 	}
 	if err != errMaybeRaceDeleted {
