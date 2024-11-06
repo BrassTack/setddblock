@@ -39,6 +39,13 @@ kill $LOCK_PID
 # Wait for a moment to ensure the lock is released
 sleep 2
 
+# Check DynamoDB item details before retrying to acquire the lock
+echo "Checking DynamoDB item details before retrying to acquire the lock..."
+item_details=$(AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text)
+revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
+ttl=$(echo "$item_details" | grep "TTL" | awk '{print $2}')
+echo "Item details before retry: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
+
 # Retry acquiring the lock until successful
 echo "Retrying to acquire lock..."
 retry_count=0
@@ -56,6 +63,13 @@ while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-a
   echo "[$(date +%Y-%m-%dT%H:%M:%S)] [retry $retry_count][${elapsed_time}s] Item details: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
   sleep 1
 done
+
+# Check DynamoDB item details after retrying to acquire the lock
+echo "Checking DynamoDB item details after retrying to acquire the lock..."
+item_details=$(AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text)
+revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
+ttl=$(echo "$item_details" | grep "TTL" | awk '{print $2}')
+echo "Item details after retry: REVISION: $revision, TTL: $ttl (Unix timestamp) at $(date +%s) expires $(date -r $ttl)"
 
 # Stop DynamoDB Local
 stop_time=$(date +%s)
