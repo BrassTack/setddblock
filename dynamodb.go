@@ -230,6 +230,7 @@ func (output *lockOutput) String() string {
 
 func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*lockOutput, error) {
 	svc.logger.Printf("[debug][setddblock] AquireLock called with parameters: %s, item ID: %s", parms, parms.ItemID)
+	svc.logger.Println("[debug][setddblock] try aquire lock")
 	var ret *lockOutput
 	var err error
 	if parms.PrevRevision == nil {
