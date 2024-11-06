@@ -323,7 +323,12 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 	svc.logger.Printf("[debug][setddblock] checking TTL for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttlValue)
 	if time.Now().Unix() > ttlValue {
 		svc.logger.Printf("[debug][setddblock] TTL has expired for item_id=%s, current time=%d, ttl=%d, table_name=%s", parms.ItemID, time.Now().Unix(), ttlValue, parms.TableName)
-		return nil, fmt.Errorf("TTL expired for item_id=%s, table_name=%s", parms.ItemID, parms.TableName)
+		return &lockOutput{
+			LockGranted:        true,
+			LeaseDuration:      leaseDuration,
+			Revision:           revision,
+			NextHeartbeatLimit: time.Now().Add(leaseDuration).Truncate(time.Millisecond),
+		}, nil
 	}
 
 	return &lockOutput{
