@@ -47,7 +47,7 @@ while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-a
   retry_count=$((retry_count + 1))
   elapsed_time=$(( $(date +%s) - start_time ))
   echo "[retry $retry_count][${elapsed_time}s] Lock not acquired, retrying..."
-  echo "Querying DynamoDB for lock item details (table: test, item ID: lock_item_id)..."
+  echo "[retry $retry_count][${elapsed_time}s] Querying DynamoDB for lock item details (table: test, item ID: lock_item_id)..."
   AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text
   sleep 1
 done
