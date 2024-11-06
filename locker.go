@@ -84,7 +84,7 @@ func (l *DynamoDBLocker) generateRevision() (string, error) {
 func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.logger.Println("[debug][setddblock] start LockWithErr")
+	l.logger.Printf("[debug][setddblock] start LockWithErr for item_id=%s, table_name=%s", l.itemID, l.tableName)
 	if l.locked {
 		return true, errors.New("aleady lock granted")
 	}
