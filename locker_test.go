@@ -122,6 +122,7 @@ func checkDDBLocalEndpoint(t *testing.T) string {
 }
 
 func TestKillAndRetryLock(t *testing.T) {
+	t.Log("Starting TestKillAndRetryLock...")
 	endpoint := checkDDBLocalEndpoint(t)
 	locker, err := setddblock.New(
 		"ddb://test/item4",
@@ -151,6 +152,7 @@ func TestKillAndRetryLock(t *testing.T) {
 	}
 	t.Log("Lock successfully acquired after retry.")
 	locker.UnlockWithErr(context.Background())
+	t.Log("TestKillAndRetryLock completed.")
 }
 	defer func() {
 		err := setddblock.Recover(recover())
