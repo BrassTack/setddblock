@@ -51,7 +51,8 @@ while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-a
   item_details=$(AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text)
   lease_duration=$(echo "$item_details" | grep "LEASEDURATION" | awk '{print $2}')
   revision=$(echo "$item_details" | grep "REVISION" | awk '{print $2}')
-  echo "[retry $retry_count][${elapsed_time}s] Item details: $item_details, LEASEDURATION: $lease_duration, REVISION: $revision"
+  ttl=$(echo "$item_details" | grep "ttl" | awk '{print $2}')
+  echo "[retry $retry_count][${elapsed_time}s] Item details: $item_details, LEASEDURATION: $lease_duration, REVISION: $revision, TTL: $ttl"
   sleep 1
 done
 
