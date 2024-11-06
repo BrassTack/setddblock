@@ -41,8 +41,12 @@ sleep 2
 
 # Retry acquiring the lock until successful
 echo "Retrying to acquire lock..."
+retry_count=0
+start_time=$(date +%s)
 while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --debug --timeout "100s" --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
-  echo "Lock not acquired, retrying..."
+  retry_count=$((retry_count + 1))
+  elapsed_time=$(( $(date +%s) - start_time ))
+  echo "[retry $retry_count][${elapsed_time}s] Lock not acquired, retrying..."
   echo "Querying DynamoDB for lock item details (table: test, item ID: lock_item_id)..."
   AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy aws dynamodb get-item --table-name test --key '{"ID": {"S": "lock_item_id"}}' --endpoint-url http://localhost:8000 --region ap-northeast-1 --output text
   sleep 1
