@@ -62,9 +62,8 @@ retry_count=0
 SECONDS=0
 while ! AWS_ACCESS_KEY_ID=dummy AWS_SECRET_ACCESS_KEY=dummy ./setddblock-macos-arm64 -nX --debug --timeout "100s" --endpoint http://localhost:8000 ddb://test/lock_item_id /bin/sh -c 'echo "Lock acquired after retry!"; exit 0'; do
   retry_count=$((retry_count + 1))
-  elapsed_time=$SECONDS
-  log_with_date "[retry $retry_count][${elapsed_time}s] Lock not acquired, retrying..."
-  log_with_date "[retry $retry_count][${elapsed_time}s] Querying DynamoDB for lock item details (table: test, item ID: lock_item_id)..."
+  log_with_date "[retry $retry_count][${SECONDS}s] Lock not acquired, retrying..."
+  log_with_date "[retry $retry_count][${SECONDS}s] Querying DynamoDB for lock item details (table: test, item ID: lock_item_id)..."
   get_item_details || log_with_date "Skipping item details check due to missing record."
   sleep 1
 done
@@ -74,6 +73,5 @@ log_with_date "Checking DynamoDB item details after retrying to acquire the lock
 get_item_details || log_with_date "Skipping item details check due to missing record."
 
 # Stop DynamoDB Local
-elapsed_time=$SECONDS
-log_with_date "[${elapsed_time}s] Stopping DynamoDB Local..."
+log_with_date "[${SECONDS}s] Stopping DynamoDB Local..."
 docker-compose down
