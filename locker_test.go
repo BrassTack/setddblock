@@ -112,7 +112,6 @@ func TestDDBLock(t *testing.T) {
 	t.Logf("f2 last = %s", lastTime2)
 	require.True(t, lastTime1.After(lastTime2))
 	require.False(t, strings.Contains(buf.String(), "[error]"))
-}
 
 func TestUnlockStaleLockBasedOnTTL(t *testing.T) {
 	endpoint := checkDDBLocalEndpoint(t)
