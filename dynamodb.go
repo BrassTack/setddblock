@@ -227,7 +227,7 @@ func (output *lockOutput) String() string {
 }
 
 func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*lockOutput, error) {
-	svc.logger.Printf("[debug][setddblock] AquireLock %s", parms)
+	svc.logger.Printf("[debug][setddblock] AquireLock called with parameters: %s", parms)
 	var ret *lockOutput
 	var err error
 	if parms.PrevRevision == nil {
@@ -243,7 +243,7 @@ func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*
 	}
 	retrier := retryPolicy.Start(ctx)
 	for retrier.Continue() {
-		svc.logger.Printf("[debug][setddblock] race retry put item or get item")
+		svc.logger.Printf("[debug][setddblock] race condition detected, retrying put item or get item")
 		ret, err = svc.putItemForLock(ctx, parms)
 		if err != errMaybeRaceDeleted {
 			return ret, err
@@ -277,7 +277,7 @@ func (svc *dynamoDBService) putItemForLock(ctx context.Context, parms *lockInput
 }
 
 func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput) (*lockOutput, error) {
-	svc.logger.Printf("[debug][setddblock] try get item table_name=%s, item_id=%s", parms.TableName, parms.ItemID)
+	svc.logger.Printf("[debug][setddblock] Attempting to get item from table_name=%s, item_id=%s", parms.TableName, parms.ItemID)
 	output, err := svc.client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &parms.TableName,
 		Key: map[string]types.AttributeValue{
@@ -291,7 +291,7 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 	if err != nil {
 		return nil, err
 	}
-	svc.logger.Printf("[debug][setddblock] get item success with TTL: %d", ttl)
+	svc.logger.Printf("[debug][setddblock] Successfully retrieved item with TTL: %d", ttl)
 	n, ok := readAttributeValueMemberN(output.Item, "LeaseDuration")
 	if !ok {
 		return nil, errMaybeRaceDeleted
@@ -309,7 +309,7 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 
 	// Check if the TTL has expired
 	if time.Now().Unix() > ttl {
-		svc.logger.Printf("[debug][setddblock] TTL expired for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttl)
+		svc.logger.Printf("[debug][setddblock] TTL has expired for item_id=%s, current time=%d, ttl=%d", parms.ItemID, time.Now().Unix(), ttl)
 		return nil, nil
 	}
 
