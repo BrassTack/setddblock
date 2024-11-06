@@ -252,7 +252,7 @@ func (svc *dynamoDBService) AquireLock(ctx context.Context, parms *lockInput) (*
 		ret, err = svc.putItemForLock(ctx, parms)
 		if err != errMaybeRaceDeleted {
 			if err == nil {
-				svc.logger.Printf("[debug][setddblock] lock acquired successfully after retry: %s", ret)
+				svc.logger.Printf("[debug][setddblock] success lock granted for table_name=%s, item_id=%s at %s", parms.TableName, parms.ItemID, time.Now().Format(time.RFC3339))
 			} else {
 				svc.logger.Printf("[error][setddblock] failed to acquire lock after retry: %s", err)
 			}
