@@ -19,8 +19,11 @@ done
 echo "DynamoDB Local is ready."
 
 # Run tests
-echo "Running tests..."
-go test -race -timeout 30s ./...
+echo "Running tests for the setddblock package..."
+go test -v -race -timeout 30s ./... | tee test_output.log
+
+echo "Tests completed. Summary:"
+grep -E "^(ok|FAIL|=== RUN|--- PASS|--- FAIL)" test_output.log
 
 # Stop DynamoDB Local
 echo "Stopping DynamoDB Local..."
