@@ -143,7 +143,7 @@ func _main() int {
 		return 6
 	}
 	if !lockGranted {
-		logger.Println("[warn][setddblock] lock was not granted")
+		logger.Printf("[warn][setddblock] lock was not granted for item_id=%s in table_name=%s", locker.ItemID(), locker.TableName())
 		if x && !X {
 			return 0
 		}
