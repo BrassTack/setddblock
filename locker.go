@@ -133,7 +133,6 @@ func (l *DynamoDBLocker) LockWithErr(ctx context.Context) (bool, error) {
 		l.logger.Printf("[debug][setddblock] aquire lock result is nil for table_name=%s, item_id=%s", l.tableName, l.itemID)
 		return false, nil
 	}
-	l.logger.Printf("[debug][setddblock] LockWithErr lockResult: %s", lockResult)
 	if !lockResult.LockGranted && !l.delay {
 		return false, nil
 	}
