@@ -101,7 +101,7 @@ func (svc *dynamoDBService) LockTableExists(ctx context.Context, tableName strin
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "ResourceNotFoundException") {
-			svc.logger.Printf("[debug][setddblock] lock not granted for item_id=%s, revision=%s", tableName, revision)
+			svc.logger.Printf("[debug][setddblock] lock not granted for table_name=%s", tableName)
 			return false, nil
 		}
 		return false, err
@@ -272,7 +272,8 @@ func (svc *dynamoDBService) putItemForLock(ctx context.Context, parms *lockInput
 		ConditionExpression: aws.String("attribute_not_exists(ID)"),
 	})
 	if err == nil {
-		svc.logger.Printf("[debug][setddblock] lock granted with TTL: %d", parms.caluTime().Unix())
+		_, ttl := parms.caluTime()
+		svc.logger.Printf("[debug][setddblock] lock granted with TTL: %d", ttl.Unix())
 		return &lockOutput{
 			LockGranted:        true,
 			LeaseDuration:      parms.LeaseDuration,
@@ -302,7 +303,8 @@ func (svc *dynamoDBService) getItemForLock(ctx context.Context, parms *lockInput
 	if err != nil {
 		return nil, err
 	}
-	svc.logger.Printf("[debug][setddblock] get item success for table_name=%s, item_id=%s, TTL: %d, current_time=%d", parms.TableName, parms.ItemID, parms.caluTime().Unix(), time.Now().Unix())
+	_, ttl := parms.caluTime()
+	svc.logger.Printf("[debug][setddblock] get item success for table_name=%s, item_id=%s, TTL: %d, current_time=%d", parms.TableName, parms.ItemID, ttl.Unix(), time.Now().Unix())
 	n, ok := readAttributeValueMemberN(output.Item, "LeaseDuration")
 	if !ok {
 		return nil, errMaybeRaceDeleted
