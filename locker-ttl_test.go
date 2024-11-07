@@ -83,8 +83,6 @@ var enableLogging = flag.Bool("debug", false, "Enable debug logging for setddblo
 // The enableLogging flag is used to control whether debug logging is enabled for the tests.
 // By default, it is set to false, meaning debug logging is disabled.
 // To enable logging, run the tests with the flag set to true: go test -v ./... --debug=true
-// This flag allows developers to easily toggle detailed logging output for debugging purposes.
-
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 	options := []func(*setddblock.Options){
 		setddblock.WithEndpoint(dynamoDBURL),
