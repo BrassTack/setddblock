@@ -222,7 +222,7 @@ func TestTTLExpirationLock(t *testing.T) {
 		// Check TTL to ensure it's stable and not being updated
 		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
 		if err == nil {
-			t.Logf("[%s] [Retry #%d] Current item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)",
+			t.Logf("[Retry #%d] Current item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)",
 				retryCount, currentRevision, currentTTL, time.Unix(currentTTL, 0).Format(time.RFC3339), time.Now().Unix(), time.Now().Format(time.RFC3339))
 		} else {
 			t.Logf("[Retry #%d] Failed to retrieve item details: %v", retryCount, err)
