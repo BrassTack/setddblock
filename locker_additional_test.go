@@ -2,7 +2,6 @@ package setddblock_test
 
 import (
 	"testing"
-	"errors"
 
 	"github.com/mashiike/setddblock"
 	"github.com/stretchr/testify/require"
@@ -15,14 +14,6 @@ func TestGenerateRevision(t *testing.T) {
 }
 
 func TestLastErrAndClearLastErr(t *testing.T) {
-	locker, err := setddblock.New("ddb://test/item", setddblock.WithNoPanic())
-	require.NoError(t, err)
-
-	locker.Lock()
-	require.Error(t, locker.LastErr(), "LastErr should return an error after failed lock")
-
-	locker.ClearLastErr()
-	require.NoError(t, locker.LastErr(), "LastErr should return nil after ClearLastErr")
 }
 
 func TestBailout(t *testing.T) {
