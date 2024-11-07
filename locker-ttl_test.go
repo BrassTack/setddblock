@@ -78,9 +78,14 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 	return dynamodb.NewFromConfig(cfg)
 }
 
-var debug = false
+var (
+	// debug is a flag to enable detailed logging for debugging purposes.
+	// Set this to true to see debug logs during test execution.
+	debug = false
 
-var enableLogging = flag.Bool("enableLogging", false, "Enable logging for setddblock")
+	// enableLogging is a command-line flag to enable logging for setddblock.
+	enableLogging = flag.Bool("enableLogging", false, "Enable logging for setddblock")
+)
 
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 	options := []func(*setddblock.Options){
@@ -164,7 +169,8 @@ func acquireInitialLock(logger *log.Logger) {
 func TestTTLExpirationLock(t *testing.T) {
 
 	var retryCount int
-	debug := false // Set this to false to disable --debug logging
+	// Use the debug variable to control logging level.
+	// This is set to false by default but can be toggled for more verbose output.
 	logger := setupLogger(debug)
 
 	// Load AWS SDK DynamoDB client configuration
