@@ -139,7 +139,7 @@ func createOptions(endpoint string) []func(*setddblock.Options) {
 		setddblock.WithLeaseDuration(500 * time.Millisecond),
 	}
 	// Check if logging is enabled and append the logger to options if true
-	if *enableLogging {
+	if enableLogging {
 		logger := setupLogger()
 		options = append(options, setddblock.WithLogger(logger))
 	}
