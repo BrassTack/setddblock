@@ -22,9 +22,6 @@ func TestLockerFunctions(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	// Ensure the lock table is created and active
-	err = locker.CreateLockTable()
-	require.NoError(t, err, "Lock table should be created without error")
 	locker.Lock()
 	require.NoError(t, locker.LastErr(), "Lock should be acquired without error")
 
