@@ -36,7 +36,7 @@ The test follows these steps:
    - This confirms that the time it took to reacquire the lock matches or exceeds the expected TTL, showing that the lock was released due to TTL expiration.
 */
 
-func getItemDetails(t *testing.T, client *dynamodb.Client, tableName, itemID string) (int64, string, error) {
+func getItemDetails(client *dynamodb.Client, tableName, itemID string) (int64, string, error) {
 	result, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
@@ -64,27 +64,66 @@ func getItemDetails(t *testing.T, client *dynamodb.Client, tableName, itemID str
 	return ttl, revision, nil
 }
 
-// Function to acquire the initial lock in a forked process
-func acquireInitialLock() {
+func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithEndpointResolver(
+		aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+			if service == dynamodb.ServiceID {
+				return aws.Endpoint{URL: dynamoDBURL}, nil
+			}
+			return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested")
+		}),
+	))
+	require.NoError(t, err, "Failed to load AWS SDK config")
+	return dynamodb.NewFromConfig(cfg)
+}
 
-	// Configure debug logging
+func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
+	locker, err := setddblock.New(
+		fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
+		setddblock.WithEndpoint(dynamoDBURL),
+		setddblock.WithLeaseDuration(5*time.Second),
+		setddblock.WithDelay(false),
+		setddblock.WithNoPanic(),
+		setddblock.WithLogger(logger),
+	)
+	require.NoError(t, err, "Failed to create locker for retry")
+
+	locker.Lock()
+	if locker.LastErr() == nil {
+		t.Logf("Lock acquired after TTL expiration on retry #%d", retryCount)
+		return true
+	}
+	return false
+}
+
+const (
+	leaseDuration   = 10 * time.Second
+	retryInterval   = 1 * time.Second
+	maxRetries      = 100
+	dynamoDBURL     = "http://localhost:8000"
+	lockItemID      = "lock_item_id"
+	lockTableName   = "test"
+)
+
+func setupLogger() *log.Logger {
 	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags|log.Lmsgprefix)
 	filter := &logutils.LevelFilter{
-	    Levels:   []logutils.LogLevel{"debug", "warn", "error"},
-	    MinLevel: "debug",
-	    Writer:   os.Stdout,
+		Levels:   []logutils.LogLevel{"debug", "warn", "error"},
+		MinLevel: "debug",
+		Writer:   os.Stdout,
 	}
 	logger.SetOutput(filter)
+	return logger
+}
 
-	leaseDuration := 10 * time.Second
+func acquireInitialLock(logger *log.Logger) {
 	locker, err := setddblock.New(
-		"ddb://test/lock_item_id",
-		setddblock.WithEndpoint("http://localhost:8000"),
+		fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
+		setddblock.WithEndpoint(dynamoDBURL),
 		setddblock.WithLeaseDuration(leaseDuration),
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
-    setddblock.WithLogger(logger),
-
+		setddblock.WithLogger(logger),
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create locker: %v\n", err)
@@ -98,30 +137,14 @@ func acquireInitialLock() {
 // Test function with process forking and cleanup
 func TestTTLExpirationLock(t *testing.T) {
 
-	// Configure debug logging
-	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags|log.Lmsgprefix)
-	filter := &logutils.LevelFilter{
-	    Levels:   []logutils.LogLevel{"debug", "warn", "error"},
-	    MinLevel: "debug",
-	    Writer:   os.Stdout,
-	}
-	logger.SetOutput(filter)
+	logger := setupLogger()
 
 	// Load AWS SDK DynamoDB client configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithEndpointResolver(
-		aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-			if service == dynamodb.ServiceID {
-				return aws.Endpoint{URL: "http://localhost:8000"}, nil
-			}
-			return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested")
-		}),
-	))
-	require.NoError(t, err, "Failed to load AWS SDK config")
-	client := dynamodb.NewFromConfig(cfg)
+	client := setupDynamoDBClient(t)
 
 	// Step 1: Check if we are in the main process or the forked process
 	if os.Getenv("FORKED") == "1" {
-		acquireInitialLock()
+		acquireInitialLock(logger)
 		return
 	}
 
@@ -149,14 +172,11 @@ func TestTTLExpirationLock(t *testing.T) {
 	t.Logf("Forked process terminated with status: %v", processState)
 
 	// Step 4: Log initial lock's TTL and revision from DynamoDB
-	initialTTL, initialRevision, err := getItemDetails(t, client, "test", "lock_item_id")
+	initialTTL, initialRevision, err := getItemDetails(client, lockTableName, lockItemID)
 	require.NoError(t, err, "Failed to get item details")
 	expireTime := time.Unix(initialTTL, 0)
 	t.Logf("Initial DynamoDB item: REVISION=%s, TTL=%d (%s)", initialRevision, initialTTL, expireTime)
 
-	retryInterval := 1 * time.Second
-	retryCount := 0
-	maxRetries := 100
 	lockAcquired := false
 
 	// Start retry loop
@@ -166,27 +186,13 @@ func TestTTLExpirationLock(t *testing.T) {
 		t.Logf("[Retry #%d] Attempting to acquire lock at %v (Unix: %d), expecting TTL expiration at %v (Unix: %d)",
 			retryCount, currentTime, currentTime.Unix(), expireTime, initialTTL)
 
-		locker, err := setddblock.New(
-			"ddb://test/lock_item_id",
-			setddblock.WithEndpoint("http://localhost:8000"),
-			setddblock.WithLeaseDuration(5*time.Second),
-			setddblock.WithDelay(false),
-			setddblock.WithNoPanic(),
-			// //simulate --debug flag
-      setddblock.WithLogger(logger),
-
-		)
-		require.NoError(t, err, "Failed to create locker for retry")
-
-		locker.Lock()
-		if locker.LastErr() == nil {
-			lockAcquired = true
-			t.Logf("Lock acquired after TTL expiration on retry #%d", retryCount)
+		lockAcquired = tryAcquireLock(t, logger, retryCount)
+		if lockAcquired {
 			break
 		}
 
 		// Check TTL to ensure it's stable and not being updated
-		currentTTL, currentRevision, err := getItemDetails(t, client, "test", "lock_item_id")
+		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
 		if err == nil {
 			t.Logf("[Retry #%d] Current DynamoDB item: REVISION=%s, TTL=%d (%s)",
 				retryCount, currentRevision, currentTTL, time.Unix(currentTTL, 0))
