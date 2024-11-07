@@ -211,8 +211,8 @@ func TestTTLExpirationLock(t *testing.T) {
 	for retryCount < maxRetries {
 		retryCount++
 		currentTime := time.Now()
-		t.Logf("[%s] [Retry #%d] Attempting lock acquisition at Unix Time: %d (%s), current time is before expected TTL expiration at Unix Time: %d (%s)",
-			time.Now().Format(time.RFC3339), retryCount, currentTime.Unix(), currentTime.Format(time.RFC3339), expireTime.Unix(), expireTime.Format(time.RFC3339))
+		t.Logf("[%s] [Retry #%d] Attempting lock acquisition. Current time: %s, Expected TTL expiration: %s",
+			time.Now().Format(time.RFC3339), retryCount, currentTime.Format(time.RFC3339), expireTime.Format(time.RFC3339))
 
 		lockAcquired = tryAcquireLock(t, logger, retryCount)
 		if lockAcquired {
