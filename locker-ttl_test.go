@@ -177,7 +177,7 @@ func TestTTLExpirationLock(t *testing.T) {
 	}
 
 	// Step 2: Fork the process to acquire and hold the initial lock
-	t.Logf("[%s] Forking process to acquire initial lock.", time.Now().Format(time.RFC3339))
+	t.Log("Forking process to acquire initial lock.")
 	cmd := exec.Command(os.Args[0], "-test.run=TestTTLExpirationLock")
 	cmd.Env = append(os.Environ(), "FORKED=1")
 	cmd.Stdout = os.Stdout
@@ -185,11 +185,11 @@ func TestTTLExpirationLock(t *testing.T) {
 	require.NoError(t, cmd.Start(), "Failed to fork process for lock acquisition")
 
 	// Allow the forked process time to acquire the lock
-	t.Logf("[%s] Waiting for forked process to acquire lock...", time.Now().Format(time.RFC3339))
+	t.Log("Waiting for forked process to acquire lock...")
 	time.Sleep(3 * time.Second)
 
 	// Step 3: Kill the forked process to simulate a crash
-	t.Logf("[%s] Killing forked process to simulate crash.", time.Now().Format(time.RFC3339))
+	t.Log("Killing forked process to simulate crash.")
 	require.NoError(t, cmd.Process.Kill(), "Failed to kill forked process")
 
 	// Confirm process termination
@@ -197,13 +197,13 @@ func TestTTLExpirationLock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to confirm process termination: %v", err)
 	}
-	t.Logf("[%s] Forked process terminated with status: %v", time.Now().Format(time.RFC3339), processState)
+	t.Logf("Forked process terminated with status: %v", processState)
 
 	// Step 4: Log initial lock's TTL and revision from DynamoDB
 	initialTTL, initialRevision, err := getItemDetails(client, lockTableName, lockItemID)
 	require.NoError(t, err, "Failed to get item details")
 	expireTime := time.Unix(initialTTL, 0)
-	t.Logf("[%s] Initial DynamoDB item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)", time.Now().Format(time.RFC3339), initialRevision, initialTTL, expireTime, time.Now().Unix(), time.Now().Format(time.RFC3339))
+	t.Logf("Initial DynamoDB item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)", initialRevision, initialTTL, expireTime, time.Now().Unix(), time.Now().Format(time.RFC3339))
 
 	lockAcquired := false
 
@@ -211,8 +211,7 @@ func TestTTLExpirationLock(t *testing.T) {
 	for retryCount < maxRetries {
 		retryCount++
 		currentTime := time.Now()
-		t.Logf("[%s] [Retry #%d] Attempting lock acquisition at %v, expecting TTL expiration at %v",
-			time.Now().Format(time.RFC3339),
+		t.Logf("[Retry #%d] Attempting lock acquisition at %v, expecting TTL expiration at %v",
 			retryCount, currentTime.Format(time.RFC3339), expireTime.Format(time.RFC3339))
 
 		lockAcquired = tryAcquireLock(t, logger, retryCount)
@@ -224,7 +223,6 @@ func TestTTLExpirationLock(t *testing.T) {
 		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
 		if err == nil {
 			t.Logf("[%s] [Retry #%d] Current item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)",
-				time.Now().Format(time.RFC3339),
 				retryCount, currentRevision, currentTTL, time.Unix(currentTTL, 0).Format(time.RFC3339), time.Now().Unix(), time.Now().Format(time.RFC3339))
 		} else {
 			t.Logf("[Retry #%d] Failed to retrieve item details: %v", retryCount, err)
