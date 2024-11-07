@@ -34,7 +34,6 @@ func TestBailout(t *testing.T) {
 		}
 	}()
 
-	// Assuming Bailout is not a method of DynamoDBLocker, replace with a valid test
-	require.True(t, true, "Placeholder for Bailout test")
+	locker.Bailout(errors.New("test error"))
 	require.Error(t, locker.LastErr(), "LastErr should return the error set by bailout")
 }
