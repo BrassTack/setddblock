@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"flag"
 	"testing"
 	"time"
   "log"
@@ -79,6 +80,8 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 
 var debug = false
 
+var enableLogging = flag.Bool("enableLogging", false, "Enable logging for setddblock")
+
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 	options := []func(*setddblock.Options){
 		setddblock.WithEndpoint(dynamoDBURL),
@@ -86,7 +89,7 @@ func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
 	}
-	if debug {
+	if debug || *enableLogging {
 		options = append(options, setddblock.WithLogger(logger))
 	}
 	locker, err := setddblock.New(
