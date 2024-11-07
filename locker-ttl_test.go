@@ -106,7 +106,7 @@ const (
 )
 
 func setupLogger(debug bool) *log.Logger {
-	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags|log.Lmsgprefix)
+	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags)
 	filter := &logutils.LevelFilter{
 		Levels:   []logutils.LogLevel{"debug", "warn", "error"},
 		MinLevel: "warn",
