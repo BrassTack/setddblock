@@ -11,6 +11,12 @@ import (
 func TestGenerateRevision(t *testing.T) {
 
 
+	locker, err := setddblock.New(
+		"ddb://test/item",
+		setddblock.WithNoPanic(),
+	)
+	require.NoError(t, err)
+
 	revision, err := locker.generateRevision()
 	require.NoError(t, err)
 	require.NotEmpty(t, revision, "Generated revision should not be empty")
