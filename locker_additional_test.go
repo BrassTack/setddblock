@@ -14,6 +14,7 @@ func TestLockerFunctions(t *testing.T) {
 	// Set environment variables for DynamoDB Local
 	os.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
+	os.Setenv("AWS_REGION", "us-west-2")
 
 	locker, err := setddblock.New(
 		"ddb://test/item",
