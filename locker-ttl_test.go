@@ -239,7 +239,7 @@ func TestTTLExpirationLock(t *testing.T) {
 
 	// Log duration between TTL expiration and successful lock acquisition
 	timeAfterTTL := actualAcquiredTime.Sub(expireTime)
-	t.Logf("Time between TTL expiration and lock acquisition: %v", timeAfterTTL)
+	t.Logf("[%s] Time between TTL expiration and lock acquisition: %v", time.Now().Format(time.RFC3339), timeAfterTTL)
 	require.LessOrEqual(t, timeAfterTTL.Seconds(), 3.0, "Time between TTL expiration and lock acquisition should not exceed 3 seconds")
 	require.GreaterOrEqual(t, actualAcquiredTime.Unix(), initialTTL, "Lock should only be acquired after TTL expiration")
 }
