@@ -78,14 +78,7 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 	return dynamodb.NewFromConfig(cfg)
 }
 
-var (
-	// debug is a flag to enable detailed logging for debugging purposes.
-	// Set this to true to see debug logs during test execution.
-	debug = false
-
-	// enableLogging is a command-line flag to enable logging for setddblock.
-	enableLogging = flag.Bool("enableLogging", false, "Enable logging for setddblock")
-)
+var enableLogging = flag.Bool("enableLogging", false, "Enable logging for setddblock")
 
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 	options := []func(*setddblock.Options){
@@ -94,7 +87,7 @@ func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
 	}
-	if debug || *enableLogging {
+	if *enableLogging {
 		options = append(options, setddblock.WithLogger(logger))
 	}
 	locker, err := setddblock.New(
@@ -120,14 +113,14 @@ const (
 	lockTableName   = "test"
 )
 
-func setupLogger(debug bool) *log.Logger {
+func setupLogger() *log.Logger {
 	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags)
 	filter := &logutils.LevelFilter{
 		Levels:   []logutils.LogLevel{"debug", "warn", "error"},
 		MinLevel: "warn",
 		Writer:   os.Stdout,
 	}
-	if debug {
+	if *enableLogging {
 		filter.MinLevel = "debug"
 	}
 	logger.SetOutput(filter)

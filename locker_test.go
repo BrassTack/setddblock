@@ -17,11 +17,7 @@ import (
 
 func TestDDBLock(t *testing.T) {
 	endpoint := checkDDBLocalEndpoint(t)
-	options := []func(*setddblock.Options){
-		setddblock.WithDelay(true),
-		setddblock.WithEndpoint(endpoint),
-		setddblock.WithLeaseDuration(500 * time.Millisecond),
-	}
+	options := createOptions(endpoint)
 	defer func() {
 		err := setddblock.Recover(recover())
 		require.NoError(t, err)
@@ -37,7 +33,7 @@ func TestDDBLock(t *testing.T) {
 		},
 		Writer: &buf,
 	}
-	logger := log.New(filter, "", log.LstdFlags|log.Lmsgprefix)
+	logger := setupLogger()
 
 	var wgStart, wgEnd sync.WaitGroup
 	wgStart.Add(1)
@@ -93,13 +89,7 @@ func TestDDBLock(t *testing.T) {
 		}(i + 1)
 		go func(workerID int) {
 			defer wgEnd.Done()
-			locker, err := setddblock.New(
-				"ddb://test/item2",
-				setddblock.WithDelay(true),
-				setddblock.WithEndpoint(endpoint),
-				setddblock.WithLeaseDuration(100*time.Millisecond),
-				setddblock.WithLogger(logger),
-			)
+			locker, err := setddblock.New("ddb://test/item2", createOptions(endpoint)...)
 			require.NoError(t, err)
 			wgStart.Wait()
 			f2(workerID, locker)
@@ -141,4 +131,16 @@ func TestNoPanic(t *testing.T) {
 	locker.ClearLastErr()
 	locker.Unlock()
 	require.Error(t, locker.LastErr())
+}
+func createOptions(endpoint string) []func(*setddblock.Options) {
+	options := []func(*setddblock.Options){
+		setddblock.WithDelay(true),
+		setddblock.WithEndpoint(endpoint),
+		setddblock.WithLeaseDuration(500 * time.Millisecond),
+	}
+	if *enableLogging {
+		logger := setupLogger()
+		options = append(options, setddblock.WithLogger(logger))
+	}
+	return options
 }
