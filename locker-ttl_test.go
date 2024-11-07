@@ -138,7 +138,7 @@ func acquireInitialLock(logger *log.Logger) {
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
 	)
-	if *enableLogging {
+	if enableLogging {
 		locker, err = setddblock.New(
 			fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
 			setddblock.WithEndpoint(dynamoDBURL),
