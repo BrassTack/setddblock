@@ -81,7 +81,9 @@ func TestDDBLock(t *testing.T) {
 				setddblock.WithDelay(true),
 				setddblock.WithEndpoint(endpoint),
 				setddblock.WithLeaseDuration(500*time.Millisecond),
-				setddblock.WithLogger(logger),
+			}
+			if *enableLogging {
+				options = append(options, setddblock.WithLogger(logger))
 			)
 			require.NoError(t, err)
 			wgStart.Wait()
