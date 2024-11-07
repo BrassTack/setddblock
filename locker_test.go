@@ -97,11 +97,11 @@ func TestDDBLock(t *testing.T) {
 	}
 	wgStart.Done()
 	wgEnd.Wait()
-	t.Log(buf.String())
+	t.Logf("[%s] %s", time.Now().Format(time.RFC3339), buf.String())
 	require.EqualValues(t, workerNum*countMax, total1)
 	require.EqualValues(t, workerNum*countMax, total2)
-	t.Logf("Function f1: Last execution time = %d (%s)", lastTime1.Unix(), lastTime1.Format(time.RFC3339))
-	t.Logf("Function f2: Last execution time = %d (%s)", lastTime2.Unix(), lastTime2.Format(time.RFC3339))
+	t.Logf("[%s] Function f1: Last execution time = %d (%s)", time.Now().Format(time.RFC3339), lastTime1.Unix(), lastTime1.Format(time.RFC3339))
+	t.Logf("[%s] Function f2: Last execution time = %d (%s)", time.Now().Format(time.RFC3339), lastTime2.Unix(), lastTime2.Format(time.RFC3339))
 	require.True(t, lastTime1.After(lastTime2))
 	require.False(t, strings.Contains(buf.String(), "[error]"))
 }

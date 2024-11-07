@@ -115,7 +115,7 @@ const (
 )
 
 func setupLogger() *log.Logger {
-	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags)
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lmicroseconds)
 	filter := &logutils.LevelFilter{
 		Levels:   []logutils.LogLevel{"debug", "warn", "error"},
 		MinLevel: "warn",
@@ -177,7 +177,7 @@ func TestTTLExpirationLock(t *testing.T) {
 	}
 
 	// Step 2: Fork the process to acquire and hold the initial lock
-	t.Log("Forking process to acquire initial lock.")
+	t.Logf("[%s] Forking process to acquire initial lock.", time.Now().Format(time.RFC3339))
 	cmd := exec.Command(os.Args[0], "-test.run=TestTTLExpirationLock")
 	cmd.Env = append(os.Environ(), "FORKED=1")
 	cmd.Stdout = os.Stdout
@@ -185,11 +185,11 @@ func TestTTLExpirationLock(t *testing.T) {
 	require.NoError(t, cmd.Start(), "Failed to fork process for lock acquisition")
 
 	// Allow the forked process time to acquire the lock
-	t.Log("Waiting for forked process to acquire lock...")
+	t.Logf("[%s] Waiting for forked process to acquire lock...", time.Now().Format(time.RFC3339))
 	time.Sleep(3 * time.Second)
 
 	// Step 3: Kill the forked process to simulate a crash
-	t.Log("Killing forked process to simulate crash.")
+	t.Logf("[%s] Killing forked process to simulate crash.", time.Now().Format(time.RFC3339))
 	require.NoError(t, cmd.Process.Kill(), "Failed to kill forked process")
 
 	// Confirm process termination
@@ -197,7 +197,7 @@ func TestTTLExpirationLock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to confirm process termination: %v", err)
 	}
-	t.Logf("Forked process terminated with status: %v", processState)
+	t.Logf("[%s] Forked process terminated with status: %v", time.Now().Format(time.RFC3339), processState)
 
 	// Step 4: Log initial lock's TTL and revision from DynamoDB
 	initialTTL, initialRevision, err := getItemDetails(client, lockTableName, lockItemID)
