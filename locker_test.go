@@ -48,13 +48,13 @@ func TestDDBLock(t *testing.T) {
 		}()
 		l.Lock()
 		defer l.Unlock()
-		t.Logf("Function f1: Worker ID = %d has started processing", workerID)
+		t.Logf("[%s] Function f1: Worker ID = %d has started processing", time.Now().Format(time.RFC3339), workerID)
 		for i := 0; i < countMax; i++ {
 			total1 += 1
 			time.Sleep(10 * time.Millisecond)
 		}
 		lastTime1 = time.Now()
-		t.Logf("Function f1: Worker ID = %d has finished processing", workerID)
+		t.Logf("[%s] Function f1: Worker ID = %d has finished processing", time.Now().Format(time.RFC3339), workerID)
 	}
 	f2 := func(workerID int, l sync.Locker) {
 		defer func() {
@@ -63,7 +63,7 @@ func TestDDBLock(t *testing.T) {
 		}()
 		l.Lock()
 		defer l.Unlock()
-		t.Logf("Function f2: Worker ID = %d has started processing", workerID)
+		t.Logf("[%s] Function f2: Worker ID = %d has started processing", time.Now().Format(time.RFC3339), workerID)
 
 		for i := 0; i < countMax; i++ {
 			total2 += 1
@@ -71,7 +71,7 @@ func TestDDBLock(t *testing.T) {
 		}
 		lastTime2 = time.Now()
 
-		t.Logf("Function f2: Worker ID = %d has finished processing", workerID)
+		t.Logf("[%s] Function f2: Worker ID = %d has finished processing", time.Now().Format(time.RFC3339), workerID)
 	}
 	for i := 0; i < workerNum; i++ {
 		wgEnd.Add(2)

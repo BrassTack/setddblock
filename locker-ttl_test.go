@@ -203,7 +203,7 @@ func TestTTLExpirationLock(t *testing.T) {
 	initialTTL, initialRevision, err := getItemDetails(client, lockTableName, lockItemID)
 	require.NoError(t, err, "Failed to get item details")
 	expireTime := time.Unix(initialTTL, 0)
-	t.Logf("Initial DynamoDB item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)", initialRevision, initialTTL, expireTime, time.Now().Unix(), time.Now().Format(time.RFC3339))
+	t.Logf("[%s] Initial DynamoDB item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)", time.Now().Format(time.RFC3339), initialRevision, initialTTL, expireTime, time.Now().Unix(), time.Now().Format(time.RFC3339))
 
 	lockAcquired := false
 
@@ -211,7 +211,8 @@ func TestTTLExpirationLock(t *testing.T) {
 	for retryCount < maxRetries {
 		retryCount++
 		currentTime := time.Now()
-		t.Logf("[Retry #%d] Attempting lock acquisition at %v, expecting TTL expiration at %v",
+		t.Logf("[%s] [Retry #%d] Attempting lock acquisition at %v, expecting TTL expiration at %v",
+			time.Now().Format(time.RFC3339),
 			retryCount, currentTime.Format(time.RFC3339), expireTime.Format(time.RFC3339))
 
 		lockAcquired = tryAcquireLock(t, logger, retryCount)
@@ -222,7 +223,8 @@ func TestTTLExpirationLock(t *testing.T) {
 		// Check TTL to ensure it's stable and not being updated
 		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
 		if err == nil {
-			t.Logf("[Retry #%d] Current item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)",
+			t.Logf("[%s] [Retry #%d] Current item: REVISION=%s, TTL=%d (%s), Current Time=%d (%s)",
+				time.Now().Format(time.RFC3339),
 				retryCount, currentRevision, currentTTL, time.Unix(currentTTL, 0).Format(time.RFC3339), time.Now().Unix(), time.Now().Format(time.RFC3339))
 		} else {
 			t.Logf("[Retry #%d] Failed to retrieve item details: %v", retryCount, err)
