@@ -100,8 +100,8 @@ func TestDDBLock(t *testing.T) {
 	t.Log(buf.String())
 	require.EqualValues(t, workerNum*countMax, total1)
 	require.EqualValues(t, workerNum*countMax, total2)
-	t.Logf("Function f1: Last execution time = %s", lastTime1)
-	t.Logf("Function f2: Last execution time = %s", lastTime2)
+	t.Logf("Function f1: Last execution time = %d (%s)", lastTime1.Unix(), lastTime1.Format(time.RFC3339))
+	t.Logf("Function f2: Last execution time = %d (%s)", lastTime2.Unix(), lastTime2.Format(time.RFC3339))
 	require.True(t, lastTime1.After(lastTime2))
 	require.False(t, strings.Contains(buf.String(), "[error]"))
 }
