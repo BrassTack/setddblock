@@ -77,11 +77,8 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 	return dynamodb.NewFromConfig(cfg)
 }
 
-var enableLogging = true // Static variable to control logging
+var enableLogging = false // Static variable to control logging using setddblock's --debug
 
-// The enableLogging variable is used to control whether debug logging is enabled for the tests.
-// By default, it is set to false, meaning debug logging is disabled.
-// To enable logging, set this variable to true.
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 	options := []func(*setddblock.Options){
 		setddblock.WithEndpoint(dynamoDBURL),
