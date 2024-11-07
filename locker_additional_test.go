@@ -17,8 +17,6 @@ func TestLastErrAndClearLastErr(t *testing.T) {
 }
 
 func TestBailout(t *testing.T) {
-	locker, err := setddblock.New("ddb://test/item", setddblock.WithNoPanic())
-	require.NoError(t, err)
 
 	defer func() {
 		if r := recover(); r != nil {
