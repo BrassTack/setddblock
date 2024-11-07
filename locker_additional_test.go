@@ -1,6 +1,7 @@
 package setddblock_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/mashiike/setddblock"
