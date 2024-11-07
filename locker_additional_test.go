@@ -60,4 +60,3 @@ func TestBailout(t *testing.T) {
 	locker.Unlock()
 	require.Error(t, locker.LastErr(), "LastErr should return an error after failed unlock")
 }
-}
