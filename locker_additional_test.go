@@ -3,7 +3,6 @@ package setddblock_test
 import (
 	"testing"
 
-	"github.com/mashiike/setddblock"
 	"github.com/stretchr/testify/require"
 )
 
