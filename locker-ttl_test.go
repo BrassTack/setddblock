@@ -137,6 +137,7 @@ func acquireInitialLock(logger *log.Logger) {
 // Test function with process forking and cleanup
 func TestTTLExpirationLock(t *testing.T) {
 
+	var retryCount int
 	logger := setupLogger()
 
 	// Load AWS SDK DynamoDB client configuration
