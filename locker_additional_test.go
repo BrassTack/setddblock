@@ -1,9 +1,7 @@
 package setddblock_test
 
 import (
-	"context"
 	"testing"
-	"time"
 
 	"github.com/mashiike/setddblock"
 
@@ -12,13 +10,8 @@ import (
 
 func TestGenerateRevision(t *testing.T) {
 
-	locker, err := setddblock.New(
-		"ddb://test/item",
-		setddblock.WithNoPanic(),
-	)
-	require.NoError(t, err)
 
-	revision, err := locker.GenerateRevision()
+	revision, err := locker.generateRevision()
 	require.NoError(t, err)
 	require.NotEmpty(t, revision, "Generated revision should not be empty")
 	locker, err := setddblock.New(
