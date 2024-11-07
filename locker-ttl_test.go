@@ -155,7 +155,9 @@ func acquireInitialLock(logger *log.Logger) {
 		os.Exit(1)
 	}
 	locker.Lock()
-	fmt.Println("Initial lock acquired; simulating lock hold indefinitely.")
+	fmt.Println(fmt.Sprintf("[%s] Initial lock acquired; simulating lock hold indefinitely.", time.Now().Format(time.RFC3339)))
+
+
 	select {} // Keep the process alive to simulate a lock hold
 }
 
@@ -203,16 +205,15 @@ func TestTTLExpirationLock(t *testing.T) {
 	initialTTL, initialRevision, err := getItemDetails(client, lockTableName, lockItemID)
 	require.NoError(t, err, "Failed to get item details")
 	expireTime := time.Unix(initialTTL, 0)
-	t.Logf("[%s] Initial DynamoDB item: REVISION=%s, TTL=%d, Current Time=%d (%s), TTL Date=%s", time.Now().Format(time.RFC3339), initialRevision, initialTTL, time.Now().Unix(), time.Now().Format(time.RFC3339), expireTime.Format(time.RFC3339))
+	t.Logf("[%s] Initial: REVISION=%s, TTL=%d Now=%d Expires: %s",
+		time.Now().Format(time.RFC3339), initialRevision, initialTTL, time.Now().Unix(), expireTime.Format(time.RFC3339))
 
 	lockAcquired := false
 
 	// Start retry loop
 	for retryCount < maxRetries {
 		retryCount++
-		currentTime := time.Now()
-		t.Logf("[%s] [Retry #%d] Attempting lock acquisition. Current Time: Unix Time: %d (%s), Expected TTL Expiration: Unix Time: %d (%s)",
-			time.Now().Format(time.RFC3339), retryCount, currentTime.Unix(), currentTime.Format(time.RFC3339), expireTime.Unix(), expireTime.Format(time.RFC3339))
+		t.Logf("[%s] [Retry #%d] Attempting lock acquisition.", time.Now().Format(time.RFC3339), retryCount)
 
 		lockAcquired = tryAcquireLock(t, logger, retryCount)
 		if lockAcquired {
@@ -222,8 +223,10 @@ func TestTTLExpirationLock(t *testing.T) {
 		// Check TTL to ensure it's stable and not being updated
 		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
 		if err == nil {
-			t.Logf("[%s] [Retry #%d] Current item: REVISION=%s, TTL=Unix Time: %d (%s), Current Time=Unix Time: %d (%s)",
-				time.Now().Format(time.RFC3339), retryCount, currentRevision, currentTTL, time.Unix(currentTTL, 0).Format(time.RFC3339), time.Now().Unix(), time.Now().Format(time.RFC3339))
+			t.Logf("[%s] [Retry #%d] REVISION=%s, TTL=%d Now=%d Expires: %s",
+				time.Now().Format(time.RFC3339), retryCount, currentRevision, currentTTL,
+				time.Now().Unix(), time.Unix(currentTTL, 0).Format(time.RFC3339))
+
 		} else {
 			t.Logf("[Retry #%d] Failed to retrieve item details: %v", retryCount, err)
 		}
@@ -236,6 +239,10 @@ func TestTTLExpirationLock(t *testing.T) {
 	t.Logf("[%s] Lock finally acquired at %v (Unix Time: %d), expected TTL expiration at %v (Unix Time: %d)",
 		time.Now().Format(time.RFC3339),
 		actualAcquiredTime, actualAcquiredTime.Unix(), expireTime, initialTTL)
+	t.Logf("[%s] Lock finally acquired at Unix Time: %d, expected TTL expiration at Unix Time: %d",
+	time.Now().Format(time.RFC3339),
+	actualAcquiredTime.Unix(), expireTime.Unix())
+
 
 	// Log duration between TTL expiration and successful lock acquisition
 	timeAfterTTL := actualAcquiredTime.Sub(expireTime)
