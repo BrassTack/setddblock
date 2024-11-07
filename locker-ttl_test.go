@@ -99,7 +99,7 @@ func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 
 	locker.Lock()
 	if locker.LastErr() == nil {
-		t.Logf("Lock acquired after TTL expiration on retry #%d", retryCount)
+		t.Logf("[%s] Lock acquired after TTL expiration on retry #%d", time.Now().Format(time.RFC3339), retryCount)
 		return true
 	}
 	return false
