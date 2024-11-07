@@ -141,7 +141,7 @@ func acquireInitialLock(logger *log.Logger) {
 func TestTTLExpirationLock(t *testing.T) {
 
 	var retryCount int
-	debug := true // Set this to false to disable debug logging
+	debug := false // Set this to false to disable --debug logging
 	logger := setupLogger(debug)
 
 	// Load AWS SDK DynamoDB client configuration
