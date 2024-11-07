@@ -10,9 +10,9 @@ import (
 )
 
 func TestLockAcquisitionFailure(t *testing.T) {
-	locker1, err := setddblock.New("ddb://test/item4", setddblock.WithLeaseDuration(1*time.Second))
+	locker1, err := setddblock.New("ddb://test/item4", setddblock.WithLeaseDuration(1*time.Second), setddblock.WithNoPanic())
 	require.NoError(t, err)
-	locker2, err := setddblock.New("ddb://test/item4", setddblock.WithLeaseDuration(1*time.Second))
+	locker2, err := setddblock.New("ddb://test/item4", setddblock.WithLeaseDuration(1*time.Second), setddblock.WithNoPanic())
 	require.NoError(t, err)
 
 	locker1.Lock()
