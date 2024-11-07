@@ -136,9 +136,20 @@ func acquireInitialLock(logger *log.Logger) {
 		setddblock.WithLeaseDuration(leaseDuration),
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
-	}
+	)
 	if *enableLogging {
-		options = append(options, setddblock.WithLogger(logger))
+		locker, err = setddblock.New(
+			fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
+			setddblock.WithEndpoint(dynamoDBURL),
+			setddblock.WithLeaseDuration(leaseDuration),
+			setddblock.WithDelay(false),
+			setddblock.WithNoPanic(),
+			setddblock.WithLogger(logger),
+		)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create locker: %v\n", err)
+			os.Exit(1)
+		}
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create locker: %v\n", err)
