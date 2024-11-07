@@ -78,13 +78,18 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 }
 
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
-	locker, err := setddblock.New(
-		fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
+	options := []func(*setddblock.Options){
 		setddblock.WithEndpoint(dynamoDBURL),
-		setddblock.WithLeaseDuration(5*time.Second),
+		setddblock.WithLeaseDuration(5 * time.Second),
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
-		setddblock.WithLogger(logger),
+	}
+	if debug {
+		options = append(options, setddblock.WithLogger(logger))
+	}
+	locker, err := setddblock.New(
+		fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
+		options...,
 	)
 	require.NoError(t, err, "Failed to create locker for retry")
 
