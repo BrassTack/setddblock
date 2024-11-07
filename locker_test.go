@@ -17,6 +17,11 @@ import (
 
 func TestDDBLock(t *testing.T) {
 	endpoint := checkDDBLocalEndpoint(t)
+	options := []func(*setddblock.Options){
+		setddblock.WithDelay(true),
+		setddblock.WithEndpoint(endpoint),
+		setddblock.WithLeaseDuration(500 * time.Millisecond),
+	}
 	defer func() {
 		err := setddblock.Recover(recover())
 		require.NoError(t, err)
@@ -80,11 +85,8 @@ func TestDDBLock(t *testing.T) {
 				"ddb://test/item1",
 				setddblock.WithDelay(true),
 				setddblock.WithEndpoint(endpoint),
-				setddblock.WithLeaseDuration(500*time.Millisecond),
-			}
-			if *enableLogging {
-				options = append(options, setddblock.WithLogger(logger))
-			}
+				options...,
+			)
 			require.NoError(t, err)
 			wgStart.Wait()
 			f1(workerID, locker)
