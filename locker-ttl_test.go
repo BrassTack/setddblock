@@ -78,7 +78,7 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 	return dynamodb.NewFromConfig(cfg)
 }
 
-var enableLogging = flag.Bool("debug", true, "Enable debug logging for setddblock using --debug flag. Use --debug to toggle logging.")
+var enableLogging = flag.Bool("debug", true, "Enable debug logging for setddblock using --debug flag. Use --debug to toggle logging.") // Use --debug to enable logging
 
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 	options := []func(*setddblock.Options){
