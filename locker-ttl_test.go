@@ -233,7 +233,8 @@ func TestTTLExpirationLock(t *testing.T) {
 
 	require.True(t, lockAcquired, "Expected to acquire lock after TTL expiration")
 	actualAcquiredTime := time.Now()
-	t.Logf("Lock finally acquired at %v (Unix: %d), expected TTL expiration at %v (Unix: %d)",
+	t.Logf("[%s] Lock finally acquired at %v (Unix: %d), expected TTL expiration at %v (Unix: %d)",
+		time.Now().Format(time.RFC3339),
 		actualAcquiredTime, actualAcquiredTime.Unix(), expireTime, initialTTL)
 
 	// Log duration between TTL expiration and successful lock acquisition
