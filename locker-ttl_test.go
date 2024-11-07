@@ -164,7 +164,7 @@ func TestTTLExpirationLock(t *testing.T) {
 	var retryCount int
 	// Use the debug variable to control logging level.
 	// This is set to false by default but can be toggled for more verbose output.
-	logger := setupLogger(debug)
+	logger := setupLogger()
 
 	// Load AWS SDK DynamoDB client configuration
 	client := setupDynamoDBClient(t)
