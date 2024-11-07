@@ -1,6 +1,7 @@
 package setddblock_test
 
 import (
+	"os"
 	"sync"
 	"testing"
 
@@ -10,6 +11,10 @@ import (
 )
 
 func TestLockerFunctions(t *testing.T) {
+	// Set environment variables for DynamoDB Local
+	os.Setenv("AWS_ACCESS_KEY_ID", "dummy")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
+
 	locker, err := setddblock.New(
 		"ddb://test/item",
 		setddblock.WithNoPanic(),
