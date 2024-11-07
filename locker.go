@@ -28,11 +28,6 @@ type DynamoDBLocker struct {
 	defaultCtx    context.Context
 }
 
-// CreateLockTable ensures the lock table is created and active
-func (l *DynamoDBLocker) CreateLockTable() error {
-	return l.svc.CreateLockTable(l.defaultCtx, l.tableName)
-}
-
 // ItemID returns the item ID of the lock.
 func (l *DynamoDBLocker) ItemID() string {
 	return l.itemID
