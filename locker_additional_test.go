@@ -1,15 +1,37 @@
 package setddblock_test
 
 import (
+	"context"
 	"testing"
+	"time"
+
+	"github.com/mashiike/setddblock"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateRevision(t *testing.T) {
 
-	// Assuming GenerateRevision is not a method of DynamoDBLocker, replace with a valid test
-	require.True(t, true, "Placeholder for GenerateRevision test")
+	locker, err := setddblock.New(
+		"ddb://test/item",
+		setddblock.WithNoPanic(),
+	)
+	require.NoError(t, err)
+
+	revision, err := locker.GenerateRevision()
+	require.NoError(t, err)
+	require.NotEmpty(t, revision, "Generated revision should not be empty")
+	locker, err := setddblock.New(
+		"ddb://test/item",
+		setddblock.WithNoPanic(),
+	)
+	require.NoError(t, err)
+
+	locker.Lock()
+	require.Error(t, locker.LastErr(), "LastErr should return an error after failed lock")
+
+	locker.ClearLastErr()
+	require.NoError(t, locker.LastErr(), "LastErr should return nil after ClearLastErr")
 }
 
 func TestLastErrAndClearLastErr(t *testing.T) {
@@ -23,6 +45,19 @@ func TestBailout(t *testing.T) {
 		}
 	}()
 
-	// Assuming Bailout is not a method of DynamoDBLocker, replace with a valid test
-	require.True(t, true, "Placeholder for Bailout test")
+	locker, err := setddblock.New(
+		"ddb://test/item",
+		setddblock.WithNoPanic(),
+	)
+	require.NoError(t, err)
+
+	locker.Lock()
+	require.Error(t, locker.LastErr(), "LastErr should return an error after failed lock")
+
+	locker.ClearLastErr()
+	require.NoError(t, locker.LastErr(), "LastErr should return nil after ClearLastErr")
+
+	locker.Unlock()
+	require.Error(t, locker.LastErr(), "LastErr should return an error after failed unlock")
+}
 }
