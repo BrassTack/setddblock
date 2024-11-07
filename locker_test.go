@@ -84,7 +84,7 @@ func TestDDBLock(t *testing.T) {
 			}
 			if *enableLogging {
 				options = append(options, setddblock.WithLogger(logger))
-			)
+			}
 			require.NoError(t, err)
 			wgStart.Wait()
 			f1(workerID, locker)

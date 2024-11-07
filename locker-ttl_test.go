@@ -139,7 +139,7 @@ func acquireInitialLock(logger *log.Logger) {
 	}
 	if *enableLogging {
 		options = append(options, setddblock.WithLogger(logger))
-	)
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create locker: %v\n", err)
 		os.Exit(1)
