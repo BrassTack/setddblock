@@ -105,12 +105,15 @@ const (
 	lockTableName   = "test"
 )
 
-func setupLogger() *log.Logger {
+func setupLogger(debug bool) *log.Logger {
 	logger := log.New(os.Stdout, "[setddblock] ", log.LstdFlags|log.Lmsgprefix)
 	filter := &logutils.LevelFilter{
 		Levels:   []logutils.LogLevel{"debug", "warn", "error"},
-		MinLevel: "debug",
+		MinLevel: "warn",
 		Writer:   os.Stdout,
+	}
+	if debug {
+		filter.MinLevel = "debug"
 	}
 	logger.SetOutput(filter)
 	return logger
@@ -138,7 +141,8 @@ func acquireInitialLock(logger *log.Logger) {
 func TestTTLExpirationLock(t *testing.T) {
 
 	var retryCount int
-	logger := setupLogger()
+	debug := true // Set this to false to disable debug logging
+	logger := setupLogger(debug)
 
 	// Load AWS SDK DynamoDB client configuration
 	client := setupDynamoDBClient(t)
@@ -184,8 +188,8 @@ func TestTTLExpirationLock(t *testing.T) {
 	for retryCount < maxRetries {
 		retryCount++
 		currentTime := time.Now()
-		t.Logf("[Retry #%d] Attempting to acquire lock at %v (Unix: %d), expecting TTL expiration at %v (Unix: %d)",
-			retryCount, currentTime, currentTime.Unix(), expireTime, initialTTL)
+		t.Logf("[Retry #%d] Attempting lock acquisition at %v, expecting TTL expiration at %v",
+			retryCount, currentTime.Format(time.RFC3339), expireTime.Format(time.RFC3339))
 
 		lockAcquired = tryAcquireLock(t, logger, retryCount)
 		if lockAcquired {
@@ -195,8 +199,8 @@ func TestTTLExpirationLock(t *testing.T) {
 		// Check TTL to ensure it's stable and not being updated
 		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
 		if err == nil {
-			t.Logf("[Retry #%d] Current DynamoDB item: REVISION=%s, TTL=%d (%s)",
-				retryCount, currentRevision, currentTTL, time.Unix(currentTTL, 0))
+			t.Logf("[Retry #%d] Current item: REVISION=%s, TTL=%s",
+				retryCount, currentRevision, time.Unix(currentTTL, 0).Format(time.RFC3339))
 		} else {
 			t.Logf("[Retry #%d] Failed to retrieve item details: %v", retryCount, err)
 		}
