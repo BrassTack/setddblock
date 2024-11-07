@@ -90,7 +90,7 @@ func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
 		setddblock.WithDelay(false),
 		setddblock.WithNoPanic(),
 	}
-	if *enableLogging {
+	if enableLogging {
 		options = append(options, setddblock.WithLogger(logger))
 	}
 	locker, err := setddblock.New(
@@ -123,7 +123,7 @@ func setupLogger() *log.Logger {
 		MinLevel: "warn",
 		Writer:   os.Stdout,
 	}
-	if *enableLogging {
+	if enableLogging {
 		filter.MinLevel = "debug"
 	}
 	logger.SetOutput(filter)
