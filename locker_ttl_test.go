@@ -80,6 +80,8 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 
 // toggle --debug style logging for setddblock
 var enableLogging = false
+// var enableLogging = true
+
 
 
 func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) (bool, time.Time) {
