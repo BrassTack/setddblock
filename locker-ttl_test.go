@@ -81,29 +81,39 @@ func setupDynamoDBClient(t *testing.T) *dynamodb.Client {
 // toggle --debug style logging for setddblock
 var enableLogging = false
 
-func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) bool {
-	options := []func(*setddblock.Options){
-		setddblock.WithEndpoint(dynamoDBURL),
-		setddblock.WithLeaseDuration(5 * time.Second),
-		setddblock.WithDelay(false),
-		setddblock.WithNoPanic(),
-	}
-	if enableLogging {
-		options = append(options, setddblock.WithLogger(logger))
-	}
-	locker, err := setddblock.New(
-		fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
-		options...,
-	)
-	require.NoError(t, err, "Failed to create locker for retry")
 
-	locker.Lock()
-	if locker.LastErr() == nil {
-		t.Logf("[%s] Lock acquired after TTL expiration on retry #%d", time.Now().Format(time.RFC3339), retryCount)
-		return true
-	}
-	return false
+func tryAcquireLock(t *testing.T, logger *log.Logger, retryCount int) (bool, time.Time) {
+    options := []func(*setddblock.Options){
+        setddblock.WithEndpoint(dynamoDBURL),
+        setddblock.WithLeaseDuration(5 * time.Second),
+        setddblock.WithDelay(false),
+        setddblock.WithNoPanic(),
+    }
+    if enableLogging {
+        options = append(options, setddblock.WithLogger(logger))
+    }
+    locker, err := setddblock.New(
+        fmt.Sprintf("ddb://%s/%s", lockTableName, lockItemID),
+        options...,
+    )
+    require.NoError(t, err, "Failed to create locker for retry")
+
+    locker.Lock()
+
+    // I'm on the fence here - use 1 second precision or actual.
+    // the original ttl isn't a subsecond timestamp, so when we calculate it, it's not "real"
+    if locker.LastErr() == nil {
+        return true, time.Now() // Capture time of acquisition
+				// Capture acquisition time with whole-second precision
+		    // return true, time.Now().Truncate(time.Second)
+
+    }
+    return false, time.Time{}
+		// Capture acquisition time with whole-second precision
+    // return false, time.Now().Truncate(time.Second)
 }
+
+
 
 const (
 	leaseDuration   = 10 * time.Second
@@ -165,6 +175,8 @@ func acquireInitialLock(logger *log.Logger) {
 func TestTTLExpirationLock(t *testing.T) {
 
 	var retryCount int
+  var actualAcquiredTime time.Time // Declare `actualAcquiredTime` at the top
+
 	// Use the debug variable to control logging level.
 	// This is set to false by default but can be toggled for more verbose output.
 	logger := setupLogger()
@@ -205,20 +217,23 @@ func TestTTLExpirationLock(t *testing.T) {
 	initialTTL, initialRevision, err := getItemDetails(client, lockTableName, lockItemID)
 	require.NoError(t, err, "Failed to get item details")
 	expireTime := time.Unix(initialTTL, 0)
+
 	t.Logf("[%s] Initial: REVISION=%s, TTL=%d Now=%d Expires: %s",
 		time.Now().Format(time.RFC3339), initialRevision, initialTTL, time.Now().Unix(), expireTime.Format(time.RFC3339))
-
-	lockAcquired := false
 
 	// Start retry loop
 	for retryCount < maxRetries {
 		retryCount++
 		t.Logf("[%s] [Retry #%d] Attempting lock acquisition.", time.Now().Format(time.RFC3339), retryCount)
 
-		lockAcquired = tryAcquireLock(t, logger, retryCount)
-		if lockAcquired {
-			break
-		}
+    // Capture lock status and acquisition time
+    lockAcquired, acquiredTime := tryAcquireLock(t, logger, retryCount)
+
+    if lockAcquired {
+        actualAcquiredTime = acquiredTime // Capture the exact acquisition time
+        t.Logf("[%s] Lock finally acquired at %d, original TTL: %d", acquiredTime.Format(time.RFC3339), acquiredTime.Unix(), expireTime.Unix())
+        break
+    }
 
 		// Check TTL to ensure it's stable and not being updated
 		currentTTL, currentRevision, err := getItemDetails(client, lockTableName, lockItemID)
@@ -234,19 +249,10 @@ func TestTTLExpirationLock(t *testing.T) {
 		time.Sleep(retryInterval)
 	}
 
-	require.True(t, lockAcquired, "Expected to acquire lock after TTL expiration")
-	actualAcquiredTime := time.Now()
-	t.Logf("[%s] Lock finally acquired at %v (Unix Time: %d), expected TTL expiration at %v (Unix Time: %d)",
-		time.Now().Format(time.RFC3339),
-		actualAcquiredTime, actualAcquiredTime.Unix(), expireTime, initialTTL)
-	t.Logf("[%s] Lock finally acquired at Unix Time: %d, expected TTL expiration at Unix Time: %d",
-	time.Now().Format(time.RFC3339),
-	actualAcquiredTime.Unix(), expireTime.Unix())
-
-
 	// Log duration between TTL expiration and successful lock acquisition
 	timeAfterTTL := actualAcquiredTime.Sub(expireTime)
 	t.Logf("[%s] Time between TTL expiration and lock acquisition: %v", time.Now().Format(time.RFC3339), timeAfterTTL)
 	require.LessOrEqual(t, timeAfterTTL.Seconds(), 3.0, "Time between TTL expiration and lock acquisition should not exceed 3 seconds")
 	require.GreaterOrEqual(t, actualAcquiredTime.Unix(), initialTTL, "Lock should only be acquired after TTL expiration")
+
 }
