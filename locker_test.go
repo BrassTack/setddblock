@@ -48,13 +48,13 @@ func TestDDBLock(t *testing.T) {
 		}()
 		l.Lock()
 		defer l.Unlock()
-		t.Logf("[%s] Function f1: Worker ID = %d has started processing", time.Now().Format(time.RFC3339), workerID)
+		t.Logf("Function f1: Worker ID = %d has started processing", workerID)
 		for i := 0; i < countMax; i++ {
 			total1 += 1
 			time.Sleep(10 * time.Millisecond)
 		}
 		lastTime1 = time.Now()
-		t.Logf("[%s] Function f1: Worker ID = %d has finished processing", time.Now().Format(time.RFC3339), workerID)
+		t.Logf("Function f1: Worker ID = %d has finished processing", workerID)
 	}
 	f2 := func(workerID int, l sync.Locker) {
 		defer func() {
@@ -63,7 +63,7 @@ func TestDDBLock(t *testing.T) {
 		}()
 		l.Lock()
 		defer l.Unlock()
-		t.Logf("[%s] Function f2: Worker ID = %d has started processing", time.Now().Format(time.RFC3339), workerID)
+		t.Logf("Function f2: Worker ID = %d has started processing", workerID)
 
 		for i := 0; i < countMax; i++ {
 			total2 += 1
@@ -71,7 +71,7 @@ func TestDDBLock(t *testing.T) {
 		}
 		lastTime2 = time.Now()
 
-		t.Logf("[%s] Function f2: Worker ID = %d has finished processing", time.Now().Format(time.RFC3339), workerID)
+		t.Logf("Function f2: Worker ID = %d has finished processing", workerID)
 	}
 	for i := 0; i < workerNum; i++ {
 		wgEnd.Add(2)
@@ -97,11 +97,11 @@ func TestDDBLock(t *testing.T) {
 	}
 	wgStart.Done()
 	wgEnd.Wait()
-	t.Logf("[%s] %s", time.Now().Format(time.RFC3339), buf.String())
+	t.Log(buf.String())
 	require.EqualValues(t, workerNum*countMax, total1)
 	require.EqualValues(t, workerNum*countMax, total2)
-	t.Logf("[%s] Function f1: Last execution time = %d (%s)", time.Now().Format(time.RFC3339), lastTime1.Unix(), lastTime1.Format(time.RFC3339))
-	t.Logf("[%s] Function f2: Last execution time = %d (%s)", time.Now().Format(time.RFC3339), lastTime2.Unix(), lastTime2.Format(time.RFC3339))
+	t.Logf("Function f1: Last execution time = %s", lastTime1)
+	t.Logf("Function f2: Last execution time = %s", lastTime2)
 	require.True(t, lastTime1.After(lastTime2))
 	require.False(t, strings.Contains(buf.String(), "[error]"))
 }
@@ -139,7 +139,7 @@ func createOptions(endpoint string) []func(*setddblock.Options) {
 		setddblock.WithLeaseDuration(500 * time.Millisecond),
 	}
 	// Check if logging is enabled and append the logger to options if true
-	if enableLogging {
+	if *enableLogging {
 		logger := setupLogger()
 		options = append(options, setddblock.WithLogger(logger))
 	}
