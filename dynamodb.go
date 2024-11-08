@@ -52,16 +52,6 @@ func newDynamoDBService(opts *Options) (*dynamoDBService, error) {
 		))
 	}
 
-	awsOpts = append(awsOpts, awsConfig.WithCredentialsProvider(
-		aws.CredentialsProviderFunc(func(ctx context.Context) (aws.Credentials, error) {
-			return aws.Credentials{
-				AccessKeyID:     "dummy",
-				SecretAccessKey: "dummy",
-				SessionToken:    "dummy",
-				Source:          "Hard-coded credentials",
-			}, nil
-		}),
-	))
 	awsCfg, err := awsConfig.LoadDefaultConfig(opts.ctx, awsOpts...)
 	if err != nil {
 		return nil, err
